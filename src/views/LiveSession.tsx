@@ -17,6 +17,13 @@ type Props = {
   coachContact: string;
 };
 
+const DAY_COLOR: Record<DayKey, string> = {
+  A: '#4DD4FF',
+  B: '#10F8A0',
+  C: '#FF9A3C',
+  D: '#A855F7',
+};
+
 const DAY_ACCENT: Record<DayKey, ArcadeColor> = {
   A: 'mana',
   B: 'win',
@@ -77,81 +84,96 @@ export function LiveSession({
 
   return (
     <div className="pb-[80px]">
-      <div className="px-[14px] py-[12px] flex justify-between items-center">
-        <button onClick={onBack} className="text-[13px] text-mute font-semibold">
-          ← Back
+      <div className="px-[16px] py-[12px] flex justify-between items-center">
+        <button onClick={onBack} className="display text-[11px] tracking-[0.1em] text-dim flex items-center gap-[4px]">
+          ‹ BACK
         </button>
         <div
-          className="mono text-[13px] text-xp px-[12px] py-[6px] rounded-xs font-bold"
+          className="mono text-[13px] font-bold text-ink px-[10px] py-[6px] rounded-xs"
           style={{ background: '#151A2E', border: '1px solid #2D3560' }}
         >
           ⏱ {formatElapsed(current.startedAt, now)}
         </div>
       </div>
 
-      <div className="mx-[14px] mb-[14px]">
+      <div className="mx-[16px] mb-[16px]">
         <PixelCard accent={DAY_ACCENT[current.day]}>
-          <div className="pixel text-[10px] tracking-[0.1em] text-mana">
-            DAY {current.day} · BOSS BATTLE
+          <div className="flex items-baseline justify-between">
+            <span className="mono text-[10px] text-mute tracking-[0.08em]">
+              DAY {current.day} · {day.name.toUpperCase()}
+            </span>
+            <span className="mono text-[10px] text-xp tracking-[0.08em]">+{totalXpEarned} XP</span>
           </div>
-          <div className="text-[22px] font-extrabold my-[6px]">{day.name}</div>
-          <XpBar value={completedCount} max={day.exercises.length} label={`${completedCount} of ${day.exercises.length} cleared`} color="#4DD4FF" segments={day.exercises.length * 3} />
+          <div className="display text-[24px] text-ink mt-[2px]">{day.name}</div>
+          <div className="mt-[10px]">
+            <XpBar
+              value={completedCount}
+              max={day.exercises.length}
+              color={DAY_COLOR[current.day]}
+              segments={day.exercises.length * 3}
+            />
+          </div>
+          <div className="mono text-[11px] text-dim tracking-[0.06em] mt-[8px]">
+            {completedCount} OF {day.exercises.length} LIFTS CLEARED
+          </div>
         </PixelCard>
       </div>
 
-      <div className="flex flex-col gap-[10px]">
+      <div className="px-[16px] flex flex-col gap-[10px]">
         {day.exercises.map((ex, i) => {
           const logged = current.exercises.find((e) => e.exerciseId === ex.id);
           const isDone = logged?.completed ?? false;
           const isActive = activeId === ex.id && !isDone;
           return (
-            <div key={ex.id} className="mx-[14px]">
-              <ExerciseCard
-                ex={ex}
-                logged={logged}
-                isActive={isActive}
-                isDone={isDone}
-                allSessions={allSessions}
-                onActivate={() => setActiveId(ex.id)}
-                onLog={(w, r) => onLogSet(ex.id, w, r)}
-                onUndo={() => onUndoSet(ex.id)}
-                onToggleDone={(done) => {
-                  onMarkComplete(ex.id, done);
-                  if (done) {
-                    const nextEx = day.exercises.find(
-                      (e, idx) => idx > i && !current.exercises.find((le) => le.exerciseId === e.id)?.completed,
-                    );
-                    if (nextEx) setActiveId(nextEx.id);
-                  }
-                }}
-              />
-            </div>
+            <ExerciseRow
+              key={ex.id}
+              ex={ex}
+              index={i + 1}
+              logged={logged}
+              isActive={isActive}
+              isDone={isDone}
+              allSessions={allSessions}
+              onActivate={() => setActiveId(ex.id)}
+              onLog={(w, r) => onLogSet(ex.id, w, r)}
+              onUndo={() => onUndoSet(ex.id)}
+              onToggleDone={(done) => {
+                onMarkComplete(ex.id, done);
+                if (done) {
+                  const nextEx = day.exercises.find(
+                    (e, idx) =>
+                      idx > i && !current.exercises.find((le) => le.exerciseId === e.id)?.completed,
+                  );
+                  if (nextEx) setActiveId(nextEx.id);
+                }
+              }}
+            />
           );
         })}
       </div>
 
-      <div className="mx-[14px] mt-[14px] flex gap-[8px]">
+      <div className="mx-[16px] mt-[14px] flex gap-[8px]">
         <button
           onClick={onCancel}
-          className="flex-1 py-[14px] text-[13px] rounded-xs text-mute font-semibold"
-          style={{ background: '#151A2E', border: '2px solid #2D3560' }}
+          className="flex-1 py-[14px] rounded-lg text-[13px] font-bold text-mute"
+          style={{ background: '#151A2E', border: '1px solid #2D3560' }}
         >
           Cancel
         </button>
         <button
           onClick={handleFinish}
           disabled={completedCount === 0}
-          className="flex-[2] py-[14px] pixel text-[12px] tracking-[0.1em] rounded-xs text-black transition-transform active:scale-[0.97]"
+          className="flex-[2] py-[14px] rounded-lg display text-[13px] tracking-[0.1em] transition-transform active:scale-[0.97]"
           style={
             completedCount === 0
               ? { background: '#1E2545', color: '#6B6B95' }
               : {
                   background: 'linear-gradient(90deg, #FFD93D, #FF4785)',
+                  color: '#000',
                   boxShadow: '0 0 18px rgba(255,217,61,0.5)',
                 }
           }
         >
-          ⚡ FINISH · +{totalXpEarned} XP
+          FINISH · +{totalXpEarned} XP
         </button>
       </div>
     </div>
@@ -160,6 +182,7 @@ export function LiveSession({
 
 type CardProps = {
   ex: Exercise;
+  index: number;
   logged: Session['exercises'][number] | undefined;
   isActive: boolean;
   isDone: boolean;
@@ -170,15 +193,23 @@ type CardProps = {
   onToggleDone: (done: boolean) => void;
 };
 
-function ExerciseCard({ ex, logged, isActive, isDone, allSessions, onActivate, onLog, onUndo, onToggleDone }: CardProps) {
+function ExerciseRow({
+  ex,
+  index,
+  logged,
+  isActive,
+  isDone,
+  allSessions,
+  onActivate,
+  onLog,
+  onUndo,
+  onToggleDone,
+}: CardProps) {
   const last = lastPerformance(allSessions, ex.id);
   const defaultWeight = suggestedNextWeight(allSessions, ex.id) ?? 0;
   const [weight, setWeight] = useState<string>(defaultWeight ? String(defaultWeight) : '');
   const [reps, setReps] = useState<string>('');
   const setsCount = logged?.sets.length ?? 0;
-
-  const accent: ArcadeColor = isDone ? 'win' : isActive ? 'xp' : 'line';
-  const glow = isActive;
 
   const log = () => {
     const w = ex.unit === 'lb' ? Number(weight) || 0 : 0;
@@ -190,18 +221,38 @@ function ExerciseCard({ ex, logged, isActive, isDone, allSessions, onActivate, o
 
   const showsWeight = ex.unit === 'lb';
   const repsPlaceholder = ex.unit === 'sec' ? 'sec' : 'reps';
-  const statusIcon = isDone ? '✓' : isActive ? '▶' : '🔒';
-  const statusColor = isDone ? '#10F8A0' : isActive ? '#FFD93D' : '#6B6B95';
+
+  const borderColor = isDone
+    ? 'rgba(16,248,160,0.4)'
+    : isActive
+    ? '#FFD93D'
+    : '#2D3560';
+  const shadow = isActive ? '0 0 0 1px rgba(255,217,61,0.3), 0 0 14px rgba(255,217,61,0.2)' : 'none';
 
   return (
-    <PixelCard accent={accent} glow={glow}>
-      <div className="flex items-center gap-[10px]" onClick={() => !isDone && !isActive && onActivate()}>
-        <div className="pixel text-[10px] w-[18px]" style={{ color: statusColor }}>
-          {statusIcon}
+    <div
+      className="rounded-xl p-[14px] transition-colors"
+      style={{
+        background: '#151A2E',
+        border: `1px solid ${borderColor}`,
+        boxShadow: shadow,
+      }}
+      onClick={() => !isDone && !isActive && onActivate()}
+    >
+      <div className="flex items-center gap-[12px]">
+        <div
+          className="display text-[11px] w-[16px]"
+          style={{ color: isDone ? '#10F8A0' : isActive ? '#FFD93D' : '#6B6B95' }}
+        >
+          {isDone ? '✓' : index}
         </div>
         <div
-          className="w-[44px] h-[36px] rounded-xs grid place-items-center text-[14px] font-bold"
-          style={{ background: '#000', border: '1px solid #2D3560', color: statusColor }}
+          className="w-[54px] h-[44px] rounded-md grid place-items-center display text-[16px]"
+          style={{
+            background: '#000',
+            border: '1px solid #2D3560',
+            color: isDone ? '#10F8A0' : isActive ? '#FFD93D' : '#9B9BC7',
+          }}
         >
           {ex.name.charAt(0)}
         </div>
@@ -209,40 +260,38 @@ function ExerciseCard({ ex, logged, isActive, isDone, allSessions, onActivate, o
           <div className={`text-[15px] font-bold truncate ${isDone ? 'text-win' : 'text-ink'}`}>
             {ex.name}
           </div>
-          <div className="text-[12px] text-dim mt-[2px]">
-            {ex.target} <span className="text-mute">·</span> <span className="text-xp">+{ex.xp} XP</span>
+          <div className="mono text-[11px] text-mute mt-[2px]">
+            {last ? `LAST: ${last.weight ? `${last.weight} × ${last.reps}` : last.reps}` : 'NO HISTORY'}
           </div>
         </div>
-        {!isActive && !isDone && last && (
-          <div className="text-right">
-            <div className="text-[9px] text-mute uppercase tracking-[0.1em]">last</div>
-            <div className="mono text-[12px] text-dim">
-              {last.weight ? `${last.weight}×${last.reps}` : last.reps}
-            </div>
+        <div className="text-right">
+          <div className="display text-[13px] text-dim">{ex.target}</div>
+          <div className={`mono text-[10px] mt-[2px] ${isDone ? 'text-xp' : 'text-mute'}`}>
+            +{ex.xp}
           </div>
-        )}
+        </div>
       </div>
 
       {isActive && (
-        <div className="mt-[12px] pt-[12px] border-t border-line" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-[14px] pt-[14px] border-t border-line" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-end gap-[8px]">
             {showsWeight && (
               <div className="flex-1">
-                <label className="text-[10px] text-mute uppercase tracking-[0.1em] font-bold block">Weight</label>
+                <label className="eyebrow text-[10px] block">WEIGHT</label>
                 <input
                   type="number"
                   inputMode="decimal"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                   placeholder="0"
-                  className="block w-full mono text-[16px] text-ink mt-[3px] px-[10px] py-[8px] rounded-xs"
-                  style={{ background: '#000', border: '2px solid #2D3560' }}
+                  className="block w-full mono text-[16px] text-ink mt-[4px] px-[12px] py-[10px] rounded-md"
+                  style={{ background: '#0A0B1A', border: '1px solid #2D3560' }}
                 />
               </div>
             )}
             <div className="flex-1">
-              <label className="text-[10px] text-mute uppercase tracking-[0.1em] font-bold block">
-                {ex.unit === 'sec' ? 'Time (s)' : 'Reps'}
+              <label className="eyebrow text-[10px] block">
+                {ex.unit === 'sec' ? 'TIME (s)' : 'REPS'}
               </label>
               <input
                 type="number"
@@ -250,31 +299,31 @@ function ExerciseCard({ ex, logged, isActive, isDone, allSessions, onActivate, o
                 value={reps}
                 onChange={(e) => setReps(e.target.value)}
                 placeholder={repsPlaceholder}
-                className="block w-full mono text-[16px] text-ink mt-[3px] px-[10px] py-[8px] rounded-xs"
-                style={{ background: '#000', border: '2px solid #2D3560' }}
+                className="block w-full mono text-[16px] text-ink mt-[4px] px-[12px] py-[10px] rounded-md"
+                style={{ background: '#0A0B1A', border: '1px solid #2D3560' }}
               />
             </div>
             <button
               onClick={log}
-              className="pixel text-[10px] tracking-[0.1em] text-black rounded-xs px-[14px] py-[10px] active:scale-[0.97] transition-transform"
-              style={{ background: '#FFD93D', boxShadow: '0 0 8px rgba(255,217,61,0.4)' }}
+              className="self-end display text-[11px] tracking-[0.1em] text-black rounded-md px-[16px] py-[11px] active:scale-[0.97] transition-transform"
+              style={{ background: '#FFD93D', boxShadow: '0 0 10px rgba(255,217,61,0.4)' }}
             >
               LOG
             </button>
           </div>
 
           {setsCount > 0 && (
-            <div className="mt-[10px] flex flex-wrap gap-[6px] items-center">
+            <div className="mt-[12px] flex flex-wrap gap-[6px] items-center">
               {logged!.sets.map((s, i) => (
                 <div
                   key={i}
-                  className="mono text-[11px] text-xp px-[8px] py-[3px] rounded-xs"
-                  style={{ background: '#000', border: '1px solid #FFD93D' }}
+                  className="mono text-[12px] text-xp font-bold px-[8px] py-[4px] rounded-md"
+                  style={{ background: '#0A0B1A', border: '1px solid #FFD93D' }}
                 >
-                  {s.weight ? `${s.weight}×${s.reps}` : s.reps}
+                  {s.weight ? `${s.weight} × ${s.reps}` : s.reps}
                 </div>
               ))}
-              <button onClick={onUndo} className="text-[11px] text-mute underline">
+              <button onClick={onUndo} className="text-[12px] text-mute underline">
                 undo
               </button>
             </div>
@@ -282,16 +331,16 @@ function ExerciseCard({ ex, logged, isActive, isDone, allSessions, onActivate, o
 
           <div className="flex gap-[8px] mt-[14px] items-center">
             <div className="flex-1 text-[12px] text-dim">
-              <span className="text-ink font-bold">{setsCount}</span> of {ex.sets} sets logged
+              <span className="text-ink font-bold">{setsCount}</span> of {ex.sets} sets
             </div>
             <button
               onClick={() => onToggleDone(true)}
               disabled={setsCount === 0}
-              className="pixel text-[10px] tracking-[0.1em] rounded-xs px-[14px] py-[10px]"
+              className="display text-[11px] tracking-[0.1em] rounded-md px-[14px] py-[10px]"
               style={
                 setsCount === 0
                   ? { background: '#1E2545', color: '#6B6B95' }
-                  : { background: '#10F8A0', color: '#000', boxShadow: '0 0 8px rgba(16,248,160,0.4)' }
+                  : { background: '#10F8A0', color: '#000', boxShadow: '0 0 10px rgba(16,248,160,0.4)' }
               }
             >
               ✓ DONE
@@ -302,7 +351,7 @@ function ExerciseCard({ ex, logged, isActive, isDone, allSessions, onActivate, o
             <ul className="mt-[12px] space-y-[4px]">
               {ex.cues.map((c, i) => (
                 <li key={i} className="text-[12px] text-dim leading-[1.4] flex gap-[8px]">
-                  <span className="text-xp text-[12px]">•</span>
+                  <span className="text-xp">•</span>
                   <span>{c}</span>
                 </li>
               ))}
@@ -312,9 +361,9 @@ function ExerciseCard({ ex, logged, isActive, isDone, allSessions, onActivate, o
       )}
 
       {isDone && setsCount > 0 && (
-        <div className="mt-[10px] flex flex-wrap gap-[6px] pl-[72px]">
+        <div className="mt-[10px] flex flex-wrap gap-[6px] items-center pl-[82px]">
           {logged!.sets.map((s, i) => (
-            <div key={i} className="mono text-[10px] text-win">
+            <div key={i} className="mono text-[11px] text-win">
               {s.weight ? `${s.weight}×${s.reps}` : s.reps}
             </div>
           ))}
@@ -329,12 +378,12 @@ function ExerciseCard({ ex, logged, isActive, isDone, allSessions, onActivate, o
           </button>
         </div>
       )}
-    </PixelCard>
+    </div>
   );
 }
 
 function buildSummary(session: Session, exercises: Exercise[]): string {
-  const lines: string[] = [`Noah · Day ${session.day} BOSS BATTLE cleared.`];
+  const lines: string[] = [`Noah · Day ${session.day} session done.`];
   for (const le of session.exercises) {
     if (!le.completed && le.sets.length === 0) continue;
     const ex = exercises.find((e) => e.id === le.exerciseId);

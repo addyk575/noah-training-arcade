@@ -7,11 +7,11 @@ type Props = {
 };
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'today', label: 'HOME',  icon: '⌂' },
-  { key: 'plan',  label: 'PLAN',  icon: '▤' },
+  { key: 'today', label: 'TODAY', icon: '⌂' },
+  { key: 'plan', label: 'PLAN', icon: '▤' },
   { key: 'session', label: 'START', icon: '⚔' },
   { key: 'stats', label: 'STATS', icon: '◆' },
-  { key: 'log',   label: 'LOG',   icon: '▦' },
+  { key: 'log', label: 'LOG', icon: '▦' },
 ];
 
 export function BottomNav({ active, onChange, onStart }: Props) {
@@ -20,7 +20,7 @@ export function BottomNav({ active, onChange, onStart }: Props) {
       className="fixed bottom-0 left-0 right-0 mx-auto max-w-[480px] h-[60px] flex z-20"
       style={{
         background: '#0A0B1A',
-        borderTop: '2px solid #2D3560',
+        borderTop: '1px solid #2D3560',
       }}
     >
       {TABS.map(({ key, label, icon }) => {
@@ -32,7 +32,9 @@ export function BottomNav({ active, onChange, onStart }: Props) {
           <button
             key={key}
             onClick={handle}
-            className={`flex-1 flex flex-col items-center justify-center gap-[3px] ${isCenter ? '-mt-[10px]' : ''}`}
+            className={`flex-1 flex flex-col items-center justify-center gap-[3px] ${
+              isCenter ? '-mt-[10px]' : ''
+            }`}
           >
             <div
               className="grid place-items-center"
@@ -41,15 +43,15 @@ export function BottomNav({ active, onChange, onStart }: Props) {
                   ? {
                       width: 44,
                       height: 44,
-                      borderRadius: 4,
+                      borderRadius: 12,
                       background: 'linear-gradient(135deg, #FFD93D, #FF4785)',
                       color: '#000',
                       fontSize: 20,
                       boxShadow: '0 0 16px rgba(255,217,61,0.6)',
                     }
                   : {
-                      width: 28,
-                      height: 28,
+                      width: 26,
+                      height: 26,
                       fontSize: 18,
                       color,
                     }
@@ -57,7 +59,10 @@ export function BottomNav({ active, onChange, onStart }: Props) {
             >
               {icon}
             </div>
-            <span className="pixel text-[8px] tracking-[0.1em]" style={{ color }}>
+            <span
+              className="display text-[9px] tracking-[0.12em]"
+              style={{ color }}
+            >
               {label}
             </span>
           </button>

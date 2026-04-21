@@ -3,7 +3,8 @@ import type { Session } from '../state/store';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { rankInfo, totalXp } from '../state/progress';
 import { getExercise, WORKOUTS } from '../data/workouts';
-import { PixelCard, SectionHead, Divider } from '../components/PixelCard';
+import { PixelCard } from '../components/PixelCard';
+import { Card } from '../components/Card';
 
 type Props = { sessions: Session[] };
 
@@ -17,7 +18,7 @@ export function Stats({ sessions }: Props) {
   );
 
   const prs = useMemo(() => {
-    const best: Record<string, { weight: number; reps: number; at: string }> = {};
+    const best: Record<string, { weight: number; reps: number; at: string; count: number }> = {};
     for (const s of sessions) {
       for (const le of s.exercises) {
         for (const st of le.sets) {
@@ -29,12 +30,15 @@ export function Stats({ sessions }: Props) {
               weight: st.weight,
               reps: st.reps,
               at: s.finishedAt ?? s.startedAt,
+              count: (existing?.count ?? 0) + 1,
             };
+          } else {
+            best[le.exerciseId] = { ...existing, count: existing.count + 1 };
           }
         }
       }
     }
-    return Object.entries(best).slice(0, 6);
+    return Object.entries(best).slice(0, 8);
   }, [sessions]);
 
   const attrs = useMemo(() => {
@@ -51,26 +55,32 @@ export function Stats({ sessions }: Props) {
     );
     const total = totalXp(sessions);
     return [
-      { l: 'STR', v: Math.min(50, Math.floor(total / 50)), c: '#FF4785' },
-      { l: 'END', v: Math.min(50, Math.floor(planks / 40)), c: '#4DD4FF' },
-      { l: 'DEX', v: Math.min(50, boxjumps), c: '#10F8A0' },
-      { l: 'FOCUS', v: Math.min(50, done.length * 3), c: '#FFD93D' },
+      { l: 'STRENGTH', v: Math.min(50, Math.floor(total / 50)), c: '#FFD93D' },
+      { l: 'ENDURANCE', v: Math.min(50, Math.floor(planks / 40)), c: '#4DD4FF' },
+      { l: 'POWER', v: Math.min(50, boxjumps), c: '#FF4785' },
+      { l: 'FOCUS', v: Math.min(50, done.length * 3), c: '#A855F7' },
     ];
   }, [sessions]);
 
   return (
     <div className="pb-[80px]">
-      <SectionHead>HERO STATS</SectionHead>
+      <div className="flex items-baseline justify-between px-[18px] mt-[20px] mb-[10px]">
+        <span className="eyebrow">ATTRIBUTES</span>
+        <span className="meta">LVL {rank.rank.toString().padStart(2, '0')}</span>
+      </div>
 
-      <div className="mx-[14px]">
+      <div className="mx-[16px]">
         <PixelCard accent="legendary">
-          <div className="grid grid-cols-2 gap-[14px]">
+          <div className="grid grid-cols-2 gap-[16px]">
             {attrs.map((s) => (
               <div key={s.l}>
-                <div className="pixel text-[10px] tracking-[0.1em]" style={{ color: s.c }}>
+                <div
+                  className="display text-[10px] tracking-[0.14em]"
+                  style={{ color: s.c }}
+                >
                   {s.l}
                 </div>
-                <div className="pixel text-[26px] text-ink mt-[6px]">{s.v}</div>
+                <div className="display text-[32px] leading-none mt-[4px] text-ink">{s.v}</div>
                 <div className="h-[3px] mt-[6px]" style={{ background: '#1E2545' }}>
                   <div
                     className="h-full"
@@ -87,103 +97,113 @@ export function Stats({ sessions }: Props) {
         </PixelCard>
       </div>
 
-      <div className="mx-[14px] mt-[14px]">
-        <PixelCard accent="xp">
-          <div className="flex items-center gap-[12px]">
+      <div className="mx-[16px] mt-[12px]">
+        <Card accent="xp" leftStripe>
+          <div className="flex items-center gap-[14px] p-[14px] pl-[20px]">
             <div className="text-[26px]">⭐</div>
             <div className="flex-1">
-              <div className="pixel text-[10px] tracking-[0.1em] text-xp">
-                TOTAL XP · LVL {rank.rank}
+              <div className="mono text-[10px] text-mute tracking-[0.08em]">
+                TOTAL XP · LVL {rank.rank.toString().padStart(2, '0')}
               </div>
-              <div className="pixel text-[22px] text-ink mt-[6px]">{rank.totalXp.toLocaleString()}</div>
+              <div className="display text-[22px] text-ink mt-[2px]">
+                {rank.totalXp.toLocaleString()}
+              </div>
             </div>
           </div>
-        </PixelCard>
+        </Card>
       </div>
 
-      <SectionHead>PERSONAL RECORDS</SectionHead>
+      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
+        <span className="eyebrow">PERSONAL RECORDS</span>
+        <span className="meta">BY LIFT</span>
+      </div>
 
       {prs.length === 0 && (
-        <div className="mx-[14px]">
-          <PixelCard accent="line">
-            <div className="text-center text-[13px] text-mute font-semibold">No records yet</div>
-            <div className="text-center text-[12px] text-dim mt-[4px]">
-              Finish a workout to set your first PR.
+        <div className="mx-[16px]">
+          <Card accent="none">
+            <div className="p-[16px] text-center">
+              <div className="text-[14px] text-mute font-semibold">No records yet</div>
+              <div className="text-[12px] text-dim mt-[4px]">
+                Finish a workout to set your first PR.
+              </div>
             </div>
-          </PixelCard>
+          </Card>
         </div>
       )}
 
-      <div className="flex flex-col gap-[10px]">
+      <div className="px-[16px] flex flex-col gap-[8px]">
         {prs.map(([id, pr], i) => {
           const ex = getExercise(id);
           if (!ex) return null;
           const tierColor = TIER_COLORS[i] ?? '#6B6B95';
-          const tierName = i === 0 ? 'Gold' : i === 1 ? 'Silver' : i === 2 ? 'Bronze' : `#${i + 1}`;
-          const accent = i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze';
+          const tierName = i === 0 ? 'GOLD' : i === 1 ? 'SILVER' : i === 2 ? 'BRONZE' : `#${i + 1}`;
           return (
-            <div key={id} className="mx-[14px]">
-              <PixelCard accent={accent as 'gold' | 'silver' | 'bronze'}>
-                <div className="flex items-center gap-[12px]">
-                  <div className="text-[28px]">🏆</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[15px] font-bold text-ink truncate">
-                      {ex.name}
-                    </div>
-                    <div
-                      className="text-[11px] mt-[2px] font-semibold"
-                      style={{ color: tierColor }}
-                    >
-                      {tierName} · Day {getDayForExercise(id)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="pixel text-[14px] text-ink">
-                      {pr.weight ? `${pr.weight}×${pr.reps}` : pr.reps}
-                    </div>
-                    {pr.weight > 0 && (
-                      <div className="text-[10px] text-mute mt-[2px]">lb</div>
-                    )}
-                  </div>
+            <div
+              key={id}
+              className="rounded-lg p-[14px] flex items-center gap-[14px]"
+              style={{ background: '#151A2E', border: '1px solid #2D3560' }}
+            >
+              <div
+                className="w-[40px] h-[40px] rounded-full grid place-items-center text-[18px]"
+                style={{ background: `${tierColor}20`, border: `1.5px solid ${tierColor}` }}
+              >
+                🏆
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[15px] font-bold text-ink truncate">{ex.name}</div>
+                <div className="mono text-[10px] text-mute mt-[2px]">
+                  DAY {getDayForExercise(id)} · {pr.count} SETS
                 </div>
-              </PixelCard>
+              </div>
+              <div className="text-right">
+                <div className="display text-[20px]" style={{ color: tierColor }}>
+                  {pr.weight ? `${pr.weight}×${pr.reps}` : pr.reps}
+                </div>
+                <div
+                  className="display text-[9px] tracking-[0.14em] mt-[2px]"
+                  style={{ color: tierColor }}
+                >
+                  {tierName}
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
 
-      <SectionHead>
-        <span>
-          ACHIEVEMENTS · {unlocked.size}/{ACHIEVEMENTS.length}
+      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
+        <span className="eyebrow">ACHIEVEMENTS</span>
+        <span className="meta">
+          {unlocked.size} OF {ACHIEVEMENTS.length}
         </span>
-      </SectionHead>
+      </div>
 
-      <div className="mx-[14px] grid grid-cols-3 gap-[8px]">
+      <div className="mx-[16px] grid grid-cols-4 gap-[8px]">
         {ACHIEVEMENTS.map((a) => {
           const has = unlocked.has(a.id);
           return (
             <div
               key={a.id}
-              className="aspect-square grid place-items-center p-[6px] text-center rounded-sm"
+              className="aspect-square grid place-items-center p-[6px] text-center rounded-md"
               style={
                 has
                   ? {
                       background: '#151A2E',
-                      border: '2px solid #FFD93D',
-                      boxShadow: '0 0 10px rgba(255,217,61,0.3)',
+                      border: '1.5px solid #FFD93D',
+                      boxShadow: '0 0 8px rgba(255,217,61,0.3)',
                     }
                   : {
                       background: '#151A2E',
-                      border: '2px solid #2D3560',
-                      opacity: 0.4,
+                      border: '1px solid #2D3560',
+                      opacity: 0.35,
                       filter: 'grayscale(1)',
                     }
               }
               title={a.description}
             >
               <div>
-                <div className="text-[26px]">{has ? a.icon : '🔒'}</div>
-                <div className="text-[10px] text-dim mt-[4px] leading-tight font-semibold">
+                <div className="text-[22px]">{has ? a.icon : '🔒'}</div>
+                <div className="text-[9px] text-dim mt-[3px] leading-tight font-semibold">
                   {a.name}
                 </div>
               </div>
@@ -191,8 +211,6 @@ export function Stats({ sessions }: Props) {
           );
         })}
       </div>
-
-      <Divider>{ACHIEVEMENTS.length - unlocked.size} MORE TO UNLOCK</Divider>
     </div>
   );
 }
