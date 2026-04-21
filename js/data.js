@@ -85,12 +85,9 @@ const WORKOUTS = {
   D: {
     name: "Lower Power + Conditioning",
     color: "#F8D030",
-    focus: "Jumping, sprinting, single-leg. Vert + first-step speed.",
+    focus: "Broad jumps → front squat → jump squats (contrast). Vert + first-step speed.",
     duration: 45,
     exercises: [
-      { id: "boxjump",    name: "Box Jump",                target: "4×3",         sets: 4, unit: "reps",
-        cues: ["Stable box only", "Land soft, quiet feet", "Step down each rep — don't rebound"],
-        search: "box jump form" },
       { id: "broadjump",  name: "Broad Jump",              target: "3×3",         sets: 3, unit: "reps",
         cues: ["Explode horizontally", "Stick the landing — no stumble", "Arms drive forward"],
         search: "broad jump standing" },
@@ -100,6 +97,9 @@ const WORKOUTS = {
       { id: "frontsq",    name: "Front Squat / Goblet",    target: "3×6",         sets: 3, unit: "lb",
         cues: ["Bar / DB on front delts, elbows up", "Torso stays upright", "Switch to front squat at 70+ lb goblet"],
         search: "front squat form" },
+      { id: "jumpsq",     name: "Jump Squats",             target: "4×5",         sets: 4, unit: "reps",
+        cues: ["Full depth squat, explode up", "Land soft — knees bent, absorb", "Arms swing up on takeoff", "Kayla: do these AFTER front squats for contrast"],
+        search: "jump squat form" },
       { id: "slrdl",      name: "Single-Leg RDL (DB)",     target: "3×8 / leg",   sets: 3, unit: "lb",
         cues: ["Tall on one leg", "Hinge forward, back leg kicks", "Huge for cuts + jump balance"],
         search: "single leg romanian deadlift" },

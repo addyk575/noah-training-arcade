@@ -31,7 +31,7 @@ const EX_IMAGES = {
   farmer:    "Farmers_Walk",
 
   // Day D
-  boxjump:     "Box_Jump_Down_with_Single_Leg_Landing",
+  jumpsq:      "Jump_Squat",
   broadjump:   "Standing_Long_Jump",
   skater:      "Skating",
   frontsq:     "Clean_from_Blocks",  // front squat missing; closest front-loaded
@@ -58,7 +58,7 @@ const EX_IMG_FALLBACKS = {
   lraise:    "Dumbbell_Raise",
   pushup:    "Pushups_-_Close_Triceps_Position",
   farmer:    "Dumbbell_Shrug",
-  boxjump:   "Box_Jump_Up",
+  jumpsq:    "Jump_Squat",
   broadjump: "Double_Leg_Butt_Kick",
   skater:    "Lateral_Bound",
   frontsq:   "Dumbbell_Squat",

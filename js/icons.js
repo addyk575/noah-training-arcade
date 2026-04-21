@@ -169,14 +169,14 @@ const EX_ICONS = {
     <line x1="6" y1="58" x2="58" y2="58" stroke-dasharray="2 2"/>
   </svg>`,
 
-  boxjump: `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="32" y="34" width="22" height="20" fill="currentColor" fill-opacity="0.12"/>
-    <line x1="8" y1="54" x2="56" y2="54"/>
-    <circle cx="14" cy="24" r="4"/>
-    <path d="M14 28 L14 42"/>
-    <path d="M10 54 L14 42 L18 54" stroke-width="2"/>
-    <path d="M20 20 Q30 10 40 20" stroke-dasharray="3 3"/>
-    <path d="M36 16 L40 20 L36 24" stroke-width="2"/>
+  jumpsq: `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="6" y1="54" x2="58" y2="54"/>
+    <circle cx="32" cy="14" r="4"/>
+    <path d="M32 18 L32 32"/>
+    <path d="M22 32 L32 28 L42 32" stroke-width="2"/>
+    <path d="M24 48 L32 36 L40 48" stroke-width="2"/>
+    <path d="M16 24 Q8 18 16 12" stroke-dasharray="3 3"/>
+    <path d="M48 24 Q56 18 48 12" stroke-dasharray="3 3"/>
   </svg>`,
 
   broadjump: `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
