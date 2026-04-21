@@ -64,14 +64,14 @@ export function Stats({ sessions }: Props) {
 
       <div className="mx-[14px]">
         <PixelCard accent="legendary">
-          <div className="grid grid-cols-2 gap-[10px]">
+          <div className="grid grid-cols-2 gap-[14px]">
             {attrs.map((s) => (
               <div key={s.l}>
-                <div className="pixel text-[8px] tracking-[0.1em]" style={{ color: s.c }}>
+                <div className="pixel text-[10px] tracking-[0.1em]" style={{ color: s.c }}>
                   {s.l}
                 </div>
-                <div className="pixel text-[22px] text-ink mt-[3px]">{s.v}</div>
-                <div className="h-[3px] mt-[4px]" style={{ background: '#1E2545' }}>
+                <div className="pixel text-[26px] text-ink mt-[6px]">{s.v}</div>
+                <div className="h-[3px] mt-[6px]" style={{ background: '#1E2545' }}>
                   <div
                     className="h-full"
                     style={{
@@ -89,26 +89,26 @@ export function Stats({ sessions }: Props) {
 
       <div className="mx-[14px] mt-[14px]">
         <PixelCard accent="xp">
-          <div className="flex items-center gap-[10px]">
-            <div className="text-[22px]">⭐</div>
+          <div className="flex items-center gap-[12px]">
+            <div className="text-[26px]">⭐</div>
             <div className="flex-1">
-              <div className="pixel text-[8px] tracking-[0.1em] text-xp">
+              <div className="pixel text-[10px] tracking-[0.1em] text-xp">
                 TOTAL XP · LVL {rank.rank}
               </div>
-              <div className="pixel text-[18px] text-ink mt-[3px]">{rank.totalXp.toLocaleString()}</div>
+              <div className="pixel text-[22px] text-ink mt-[6px]">{rank.totalXp.toLocaleString()}</div>
             </div>
           </div>
         </PixelCard>
       </div>
 
-      <SectionHead>TROPHIES (PRs)</SectionHead>
+      <SectionHead>PERSONAL RECORDS</SectionHead>
 
       {prs.length === 0 && (
         <div className="mx-[14px]">
           <PixelCard accent="line">
-            <div className="text-center pixel text-[9px] text-mute">NO TROPHIES YET</div>
-            <div className="text-center text-[11px] text-dim mt-[6px]">
-              Finish a battle to earn your first PR.
+            <div className="text-center text-[13px] text-mute font-semibold">No records yet</div>
+            <div className="text-center text-[12px] text-dim mt-[4px]">
+              Finish a workout to set your first PR.
             </div>
           </PixelCard>
         </div>
@@ -119,26 +119,31 @@ export function Stats({ sessions }: Props) {
           const ex = getExercise(id);
           if (!ex) return null;
           const tierColor = TIER_COLORS[i] ?? '#6B6B95';
-          const tierName = i === 0 ? 'GOLD' : i === 1 ? 'SILVER' : i === 2 ? 'BRONZE' : `#${i + 1}`;
+          const tierName = i === 0 ? 'Gold' : i === 1 ? 'Silver' : i === 2 ? 'Bronze' : `#${i + 1}`;
           const accent = i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze';
           return (
             <div key={id} className="mx-[14px]">
               <PixelCard accent={accent as 'gold' | 'silver' | 'bronze'}>
                 <div className="flex items-center gap-[12px]">
-                  <div className="text-[26px]">🏆</div>
+                  <div className="text-[28px]">🏆</div>
                   <div className="flex-1 min-w-0">
+                    <div className="text-[15px] font-bold text-ink truncate">
+                      {ex.name}
+                    </div>
                     <div
-                      className="pixel text-[8px] tracking-[0.12em] truncate"
+                      className="text-[11px] mt-[2px] font-semibold"
                       style={{ color: tierColor }}
                     >
-                      {tierName} · {ex.name.toUpperCase()}
+                      {tierName} · Day {getDayForExercise(id)}
                     </div>
-                    <div className="pixel text-[14px] text-ink mt-[4px]">
-                      {pr.weight ? `${pr.weight} LB × ${pr.reps}` : `${pr.reps} REPS`}
+                  </div>
+                  <div className="text-right">
+                    <div className="pixel text-[14px] text-ink">
+                      {pr.weight ? `${pr.weight}×${pr.reps}` : pr.reps}
                     </div>
-                    <div className="pixel text-[7px] text-mute mt-[3px] tracking-[0.08em]">
-                      DAY {getDayForExercise(id)}
-                    </div>
+                    {pr.weight > 0 && (
+                      <div className="text-[10px] text-mute mt-[2px]">lb</div>
+                    )}
                   </div>
                 </div>
               </PixelCard>
@@ -153,13 +158,13 @@ export function Stats({ sessions }: Props) {
         </span>
       </SectionHead>
 
-      <div className="mx-[14px] grid grid-cols-4 gap-[6px]">
+      <div className="mx-[14px] grid grid-cols-3 gap-[8px]">
         {ACHIEVEMENTS.map((a) => {
           const has = unlocked.has(a.id);
           return (
             <div
               key={a.id}
-              className="aspect-square grid place-items-center p-[4px] text-center rounded-sm"
+              className="aspect-square grid place-items-center p-[6px] text-center rounded-sm"
               style={
                 has
                   ? {
@@ -170,16 +175,16 @@ export function Stats({ sessions }: Props) {
                   : {
                       background: '#151A2E',
                       border: '2px solid #2D3560',
-                      opacity: 0.35,
+                      opacity: 0.4,
                       filter: 'grayscale(1)',
                     }
               }
               title={a.description}
             >
               <div>
-                <div className="text-[22px]">{has ? a.icon : '🔒'}</div>
-                <div className="pixel text-[6px] text-dim tracking-[0.06em] mt-[2px] leading-tight">
-                  {a.name.toUpperCase()}
+                <div className="text-[26px]">{has ? a.icon : '🔒'}</div>
+                <div className="text-[10px] text-dim mt-[4px] leading-tight font-semibold">
+                  {a.name}
                 </div>
               </div>
             </div>

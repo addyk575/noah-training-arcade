@@ -40,83 +40,82 @@ export function Today({ sessions, onStart }: Props) {
   return (
     <div className="pb-[80px]">
       <div className="px-[14px] pt-[4px]">
-        <XpBar value={rank.xpInRank} max={rank.xpToNext} label={`XP · NEXT: LVL ${rank.rank + 1}`} color="#FFD93D" />
+        <XpBar value={rank.xpInRank} max={rank.xpToNext} label={`LVL ${rank.rank} → ${rank.rank + 1}`} color="#FFD93D" />
       </div>
 
-      <div className="divider py-[14px]">─── CURRENT QUEST ───</div>
+      <div className="divider py-[14px]">─── WEEKLY QUEST ───</div>
 
       <div className="mx-[14px]">
         <PixelCard accent={unlocked ? 'win' : 'xp'} glow>
-          <div className="flex items-center gap-[10px] mb-[10px]">
+          <div className="flex items-center gap-[12px] mb-[12px]">
             <div
-              className="w-[36px] h-[36px] grid place-items-center rounded-sm text-[18px] text-black"
+              className="w-[40px] h-[40px] grid place-items-center rounded-sm text-[20px] text-black"
               style={{ background: unlocked ? '#10F8A0' : '#FFD93D' }}
             >
               {unlocked ? '✓' : '⚔'}
             </div>
             <div className="flex-1">
-              <div className="pixel text-[8px] tracking-[0.1em]" style={{ color: unlocked ? '#10F8A0' : '#FFD93D' }}>
-                {unlocked ? 'QUEST COMPLETE' : 'WEEKLY QUEST'}
+              <div className="pixel text-[10px] tracking-[0.1em]" style={{ color: unlocked ? '#10F8A0' : '#FFD93D' }}>
+                {unlocked ? 'QUEST DONE' : 'EARN SCREEN TIME'}
               </div>
-              <div className="text-[16px] font-extrabold mt-[3px]">
-                {unlocked ? 'Phone Unlocked' : 'Earn Screen Time'}
+              <div className="text-[20px] font-extrabold mt-[4px]">
+                {count} <span className="text-mute font-normal">/ {goal}</span> sessions
               </div>
             </div>
           </div>
-          <XpBar value={count} max={goal} label="SESSIONS" color={unlocked ? '#10F8A0' : '#FFD93D'} segments={goal * 5} />
-          <div className="mt-[8px] text-[11px] text-dim">
+          <XpBar value={count} max={goal} label={`${count} of ${goal} in last 8 days`} color={unlocked ? '#10F8A0' : '#FFD93D'} segments={goal * 5} />
+          <div className="mt-[10px] text-[13px] text-dim">
             {unlocked ? (
-              <>
-                <span className="text-win font-bold">phone good for the week 🔓</span>
-              </>
+              <span className="text-win font-bold">🔓 Phone unlocked for the week</span>
             ) : (
               <>
-                {remaining} more workout{remaining === 1 ? '' : 's'} →{' '}
-                <span className="text-xp font-bold">+500 XP + phone unlock 🔓</span>
+                <span className="text-ink font-bold">{remaining} more</span> workout{remaining === 1 ? '' : 's'} →{' '}
+                <span className="text-xp font-bold">phone unlocks</span>
               </>
             )}
           </div>
         </PixelCard>
       </div>
 
-      <SectionHead>NEXT BATTLE</SectionHead>
+      <SectionHead>NEXT WORKOUT</SectionHead>
 
       <div className="mx-[14px]">
         <PixelCard accent="mana">
           <div className="flex items-center gap-[12px]">
             <div
-              className="w-[52px] h-[52px] rounded-sm grid place-items-center text-[24px]"
+              className="w-[56px] h-[56px] rounded-sm grid place-items-center text-[26px]"
               style={{ background: `linear-gradient(135deg, ${DAY_COLOR[nextDay]}, #1e5aa8)` }}
             >
               {DAY_ICON[nextDay]}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="pixel text-[8px] tracking-[0.1em] text-mana">
-                DAY {nextDay} · BOSS LVL {rank.rank + 8}
+              <div className="pixel text-[10px] tracking-[0.1em] text-mana">
+                DAY {nextDay}
               </div>
-              <div className="text-[16px] font-extrabold mt-[3px] truncate">{day.name}</div>
-              <div className="text-[10px] text-dim mt-[2px]">
-                {day.exercises.length} exercises · ~{day.duration} min · +150 XP
+              <div className="text-[18px] font-extrabold mt-[4px] truncate">{day.name}</div>
+              <div className="text-[12px] text-dim mt-[3px]">
+                {day.exercises.length} exercises · ~{day.duration} min · <span className="text-xp">+150 XP</span>
               </div>
             </div>
           </div>
           <button
             onClick={() => onStart(nextDay)}
-            className="w-full mt-[12px] py-[10px] pixel text-[10px] tracking-[0.1em] rounded-xs text-black active:scale-[0.98] transition-transform"
+            className="w-full mt-[14px] py-[12px] pixel text-[11px] tracking-[0.1em] rounded-xs text-black active:scale-[0.98] transition-transform"
             style={{
               background: '#4DD4FF',
               boxShadow: '0 0 12px rgba(77,212,255,0.5)',
             }}
           >
-            ▶ START BATTLE
+            ▶ START
           </button>
         </PixelCard>
       </div>
 
-      <div className="px-[14px] pt-[18px] pb-[10px] flex justify-between items-center">
-        <div className="pixel text-[9px] text-mute tracking-[0.12em]">▸ STREAK</div>
-        <div className="pixel text-[9px] text-hp">
-          {streak} DAY{streak === 1 ? '' : 'S'} 🔥
+      <div className="px-[14px] pt-[20px] pb-[10px] flex justify-between items-center">
+        <div className="pixel text-[10px] text-mute tracking-[0.12em]">▸ THIS WEEK</div>
+        <div className="text-[12px] font-bold flex items-center gap-[4px]">
+          <span className="animate-flame">🔥</span>
+          <span className="text-hp">{streak} day{streak === 1 ? '' : 's'}</span>
         </div>
       </div>
 

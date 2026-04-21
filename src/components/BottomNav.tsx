@@ -7,10 +7,10 @@ type Props = {
 };
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'today', label: 'BASE',  icon: '⌂' },
-  { key: 'plan',  label: 'MAP',   icon: '▤' },
-  { key: 'session', label: 'FIGHT', icon: '⚔' },
-  { key: 'stats', label: 'HERO',  icon: '◆' },
+  { key: 'today', label: 'HOME',  icon: '⌂' },
+  { key: 'plan',  label: 'PLAN',  icon: '▤' },
+  { key: 'session', label: 'START', icon: '⚔' },
+  { key: 'stats', label: 'STATS', icon: '◆' },
   { key: 'log',   label: 'LOG',   icon: '▦' },
 ];
 

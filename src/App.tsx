@@ -78,7 +78,7 @@ export default function App() {
             boxShadow: '0 0 18px rgba(255,217,61,0.6)',
           }}
         >
-          ▶ RESUME BATTLE
+          ▶ RESUME WORKOUT
         </button>
       )}
     </div>
