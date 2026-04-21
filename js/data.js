@@ -6,7 +6,7 @@
 const WORKOUTS = {
   A: {
     name: "Upper Strength",
-    color: "#C9712C",
+    color: "#C03028",
     focus: "Push / pull strength. Builds the pressing & pulling foundation.",
     duration: 45,
     exercises: [
@@ -32,7 +32,7 @@ const WORKOUTS = {
   },
   B: {
     name: "Lower Strength + Agility",
-    color: "#5AA95A",
+    color: "#78C850",
     focus: "Squat, hinge, cuts. The basketball/football engine.",
     duration: 50,
     exercises: [
@@ -58,7 +58,7 @@ const WORKOUTS = {
   },
   C: {
     name: "Upper Hypertrophy + Power",
-    color: "#D24A3C",
+    color: "#F08030",
     focus: "Size work. Fills out the frame + explosive medball power.",
     duration: 45,
     exercises: [
@@ -84,7 +84,7 @@ const WORKOUTS = {
   },
   D: {
     name: "Lower Power + Conditioning",
-    color: "#F2C13C",
+    color: "#F8D030",
     focus: "Jumping, sprinting, single-leg. Vert + first-step speed.",
     duration: 45,
     exercises: [

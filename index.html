@@ -38,11 +38,11 @@
     --body-dim:    #C9D8F5;
     --body-mute:   #8FA3CE;
 
-    /* Pokémon type colors per day */
-    --day-a:       #C9712C;  /* Fighting brown */
-    --day-b:       #5AA95A;  /* Grass green */
-    --day-c:       #D24A3C;  /* Fire red */
-    --day-d:       #F2C13C;  /* Electric yellow */
+    /* Canonical Pokémon type colors (from the actual games) */
+    --day-a:       #C03028;  /* Fighting — deep red-brown */
+    --day-b:       #78C850;  /* Grass — bright green */
+    --day-c:       #F08030;  /* Fire — canonical orange (not red!) */
+    --day-d:       #F8D030;  /* Electric — bright yellow */
 
     /* Pokémon frame */
     --frame-gold:  #F2C13C;
@@ -67,9 +67,11 @@
   html, body {
     font-family: var(--font-ui);
     background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg opacity='0.05'%3E%3Ccircle cx='60' cy='60' r='26' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3Cpath d='M34 60h52' stroke='%23ffffff' stroke-width='2'/%3E%3Ccircle cx='60' cy='60' r='6' fill='%23ffffff'/%3E%3Ccircle cx='60' cy='60' r='3' fill='%23ffffff'/%3E%3C/g%3E%3C/svg%3E"),
       radial-gradient(1000px 600px at 50% -10%, #2A55A5 0%, transparent 60%),
       radial-gradient(800px 600px at 50% 110%, #18306A 0%, transparent 60%),
       linear-gradient(180deg, var(--bg-2), var(--bg));
+    background-size: 120px 120px, auto, auto, auto;
     background-attachment: fixed;
     color: var(--body-ink);
     -webkit-font-smoothing: antialiased;
@@ -1517,10 +1519,10 @@
     /* Inner type-tinted fill */
     background: linear-gradient(180deg, var(--day-fill-top, #FFFDF3) 0%, var(--day-fill-bot, #F4E8BE) 100%);
   }
-  .day-tile[data-day="A"] { --day-color: var(--day-a); --day-fill-top: #F8E4D0; --day-fill-bot: #E8C09A; }
-  .day-tile[data-day="B"] { --day-color: var(--day-b); --day-fill-top: #E8F5D6; --day-fill-bot: #BDE2A3; }
-  .day-tile[data-day="C"] { --day-color: var(--day-c); --day-fill-top: #FCDED8; --day-fill-bot: #F0A596; }
-  .day-tile[data-day="D"] { --day-color: var(--day-d); --day-fill-top: #FFF3B8; --day-fill-bot: #F8DE6D; }
+  .day-tile[data-day="A"] { --day-color: var(--day-a); --day-fill-top: #F3D4D0; --day-fill-bot: #DCA49E; }
+  .day-tile[data-day="B"] { --day-color: var(--day-b); --day-fill-top: #E4F5D0; --day-fill-bot: #B5DD96; }
+  .day-tile[data-day="C"] { --day-color: var(--day-c); --day-fill-top: #FCE1C7; --day-fill-bot: #F5B57C; }
+  .day-tile[data-day="D"] { --day-color: var(--day-d); --day-fill-top: #FFF4B8; --day-fill-bot: #F8DE6D; }
 
   .tcg-head {
     position: relative;
@@ -1569,7 +1571,7 @@
     font-family: var(--font-display);
     font-size: 20px;
     font-weight: 900;
-    color: #C9302C;
+    color: #EE1B2A;
     letter-spacing: -0.03em;
     text-shadow:
       -1px -1px 0 #17171C,
