@@ -63,7 +63,10 @@ function renderHome() {
       </div>
     </div>`;
 
-  // Day matrix
+  // Pokémon-card day matrix
+  const DAY_TYPE = { A: 'Fighting', B: 'Grass', C: 'Fire', D: 'Lightning' };
+  const DAY_EMOJI = { A: '✊', B: '🌿', C: '🔥', D: '⚡' };
+  const DAY_STAGE = { A: 'BASIC', B: 'STAGE 1', C: 'BASIC', D: 'STAGE 1' };
   const daysHtml = DAY_ORDER.map(key => {
     const w = WORKOUTS[key];
     const lastWorkout = state.workouts
@@ -72,18 +75,28 @@ function renderHome() {
     const lastStr = lastWorkout ? formatDate(lastWorkout.date) : 'NEVER';
     const isRecent = lastWorkout && daysAgo(lastWorkout.date) < 4;
     const isRec = key === recDay;
+    const cost = Math.max(1, Math.min(3, Math.ceil(w.exercises.length / 3)));
+    const energy = DAY_EMOJI[key].repeat(cost);
+    const hp = w.duration * 2;
     return `
       <button class="day-tile ${isRec ? 'recommended' : ''}" data-day="${key}" onclick="startWorkout('${key}')">
-        <div>
-          <div class="day-key"><span class="d">DAY</span><span style="color:${w.color}">${key}</span></div>
+        <div class="tcg-head">
+          <div class="tcg-stage">${DAY_STAGE[key]}</div>
+          <div class="tcg-name">Day ${key}</div>
+          <div class="tcg-hp"><span class="tcg-hp-l">HP</span><span class="tcg-hp-n">${hp}</span></div>
         </div>
-        <div>
-          <div class="day-name">${w.name}</div>
-          <div class="day-tag">${w.duration} min · ${w.exercises.length} lifts</div>
+        <div class="tcg-art">
+          <span class="tcg-emoji">${DAY_EMOJI[key]}</span>
+          <span class="tcg-type">${DAY_TYPE[key]} Type</span>
         </div>
-        <div class="day-last ${isRecent ? 'recent' : ''}">
-          <span class="day-dot" style="${isRecent ? 'background:'+w.color : ''}"></span>
-          LAST · <b>${lastStr}</b>
+        <div class="tcg-attack">
+          <span class="tcg-energy">${energy}</span>
+          <span class="tcg-attack-name">${w.name}</span>
+          <span class="tcg-attack-damage">${w.duration}</span>
+        </div>
+        <div class="tcg-foot">
+          <span class="tcg-foot-l">${w.exercises.length} lifts · LAST <b>${lastStr}</b></span>
+          <span class="tcg-coll">${DAY_ORDER.indexOf(key)+1}/4</span>
         </div>
       </button>`;
   }).join('');

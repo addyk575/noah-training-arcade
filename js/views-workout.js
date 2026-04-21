@@ -79,12 +79,21 @@ function renderWorkout() {
     const weightColLabel = ex.unit === 'lb' ? 'WEIGHT' : ex.unit.toUpperCase();
     const repsColLabel = ex.unit === 'lb' ? 'REPS' : 'SETS';
 
+    const DAY_EMOJI = { A: '✊', B: '🌿', C: '🔥', D: '⚡' };
+    const cost = ex.unit === 'lb' ? Math.min(3, Math.ceil(ex.sets / 2)) : Math.max(1, Math.min(2, ex.sets - 2));
+    const energy = DAY_EMOJI[workout.dayKey].repeat(cost);
+    const damage = ex.sets * 5;
     return `<div class="ex-card ${allDone ? 'done' : ''}" data-exid="${ex.id}">
       <div class="ex-head">
         <div class="ex-index">${String(idx+1).padStart(2,'0')}</div>
         ${exImg(ex.id, 'ex-img')}
         <div class="ex-name">${ex.name}</div>
         <div class="ex-target">${ex.target}</div>
+      </div>
+      <div class="ex-attack-row">
+        <span class="ex-energy">${energy}</span>
+        <span class="ex-attack-name">${ex.target}</span>
+        <span class="ex-attack-damage">${damage}</span>
       </div>
       <div class="ex-sub">
         ${prevText}

@@ -1347,11 +1347,40 @@
     color: var(--ink);
   }
 
-  /* HERO QUEST CARD — Pokémon-style with HP-style count */
+  /* HERO QUEST CARD — as a Trainer (Supporter) card */
   .hero {
-    padding: 16px 18px 18px;
+    padding: 0;
     overflow: hidden;
+    background: linear-gradient(180deg, #FFFDF3 0%, #F4E8BE 100%);
+    border-color: #7C3ABF;
+    box-shadow:
+      inset 0 0 0 2px #17171C,
+      inset 0 0 0 4px #FFFDF3,
+      0 4px 0 rgba(0,0,0,0.3),
+      0 10px 26px rgba(0,0,0,0.35),
+      0 0 20px rgba(124,58,191,0.25);
   }
+  .hero::before {
+    /* Trainer banner */
+    content: "⚡ TRAINER · SUPPORTER";
+    display: block;
+    padding: 6px 14px;
+    background: linear-gradient(180deg, #A855F7, #7C3ABF);
+    color: #FFFDF3;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    border-bottom: 2px solid #17171C;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  }
+  .hero.earned::before {
+    content: "★ VICTORY · TRAINER";
+    background: linear-gradient(180deg, #5AA95A, #2F6930);
+  }
+  .hero-top, .hero-count, .hero-bar, .hero-msg { padding-left: 16px; padding-right: 16px; }
+  .hero-top { padding-top: 14px; }
+  .hero-msg { padding-bottom: 16px; }
   .hero::after {
     /* subtle holographic shimmer for the quest card */
     content: "";
@@ -1475,41 +1504,203 @@
       0 1px 0 #8A6500;
   }
 
-  /* DAY MATRIX — 4 Pokémon cards */
-  .day-grid { gap: 10px; }
+  /* DAY MATRIX — actual Pokémon TCG card layouts */
+  .day-grid { gap: 12px; grid-template-columns: 1fr 1fr; }
   .day-tile {
-    min-height: 140px;
-    background: linear-gradient(180deg, var(--surface-1) 0%, #F4E8BE 100%);
+    min-height: 260px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+    text-align: left;
+    /* Inner type-tinted fill */
+    background: linear-gradient(180deg, var(--day-fill-top, #FFFDF3) 0%, var(--day-fill-bot, #F4E8BE) 100%);
   }
-  .day-tile::after {
-    /* Type stripe at the top of each "card" */
-    content: "";
+  .day-tile[data-day="A"] { --day-color: var(--day-a); --day-fill-top: #F8E4D0; --day-fill-bot: #E8C09A; }
+  .day-tile[data-day="B"] { --day-color: var(--day-b); --day-fill-top: #E8F5D6; --day-fill-bot: #BDE2A3; }
+  .day-tile[data-day="C"] { --day-color: var(--day-c); --day-fill-top: #FCDED8; --day-fill-bot: #F0A596; }
+  .day-tile[data-day="D"] { --day-color: var(--day-d); --day-fill-top: #FFF3B8; --day-fill-bot: #F8DE6D; }
+
+  .tcg-head {
+    position: relative;
+    padding: 8px 10px 6px;
+    background: linear-gradient(180deg, var(--day-color) 0%, rgba(0,0,0,0.15) 100%), var(--day-color);
+    border-bottom: 2px solid rgba(0,0,0,0.4);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 6px;
+    align-items: baseline;
+  }
+  .tcg-stage {
+    font-family: var(--font-mono);
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: rgba(0,0,0,0.7);
+    text-transform: uppercase;
+  }
+  .tcg-name {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: #17171C;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    grid-column: 1 / 3;
+    margin-top: 2px;
+  }
+  .tcg-hp {
+    grid-row: 1 / 3;
+    grid-column: 3;
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    align-self: center;
+  }
+  .tcg-hp-l {
+    font-family: var(--font-display);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: #17171C;
+  }
+  .tcg-hp-n {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 900;
+    color: #C9302C;
+    letter-spacing: -0.03em;
+    text-shadow:
+      -1px -1px 0 #17171C,
+      1px -1px 0 #17171C,
+      -1px 1px 0 #17171C,
+      1px 1px 0 #17171C;
+  }
+  .tcg-art {
+    flex: 1;
+    position: relative;
+    margin: 6px 8px 0;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.35), transparent 60%),
+      linear-gradient(180deg, rgba(255,255,255,0.2), transparent 50%),
+      var(--day-color);
+    border: 2px solid #17171C;
+    border-radius: 4px;
+    min-height: 80px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.2);
+  }
+  .tcg-emoji {
+    font-size: 54px;
+    line-height: 1;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.35));
+  }
+  .tcg-type {
     position: absolute;
-    top: 6px; left: 6px; right: 6px;
-    height: 6px;
-    border-radius: 3px;
-    background: var(--day-color, var(--line));
-    border: 1px solid rgba(0,0,0,0.4);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+    bottom: 3px; left: 6px;
+    font-family: var(--font-mono);
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
-  .day-tile[data-day="A"] { --day-color: var(--day-a); }
-  .day-tile[data-day="B"] { --day-color: var(--day-b); }
-  .day-tile[data-day="C"] { --day-color: var(--day-c); }
-  .day-tile[data-day="D"] { --day-color: var(--day-d); }
-  .day-tile.recommended { border-color: var(--accent); box-shadow:
+  .tcg-attack {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 6px;
+    align-items: center;
+    padding: 8px 10px;
+    margin: 8px 6px 0;
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 4px;
+  }
+  .tcg-energy {
+    font-size: 13px;
+    line-height: 1;
+    letter-spacing: -3px;
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.35));
+  }
+  .tcg-attack-name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11px;
+    color: #17171C;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .tcg-attack-damage {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 16px;
+    color: #17171C;
+    letter-spacing: -0.02em;
+    text-shadow:
+      -1px -1px 0 rgba(255,255,255,0.4),
+      1px 1px 0 rgba(0,0,0,0.2);
+  }
+  .tcg-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 10px 8px;
+    border-top: 1px dashed rgba(0,0,0,0.3);
+    margin: 6px 6px 0;
+  }
+  .tcg-foot-l {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 0.06em;
+    color: rgba(0,0,0,0.65);
+    text-transform: uppercase;
+  }
+  .tcg-foot-l b { color: #17171C; font-weight: 700; }
+  .tcg-coll {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(0,0,0,0.7);
+    letter-spacing: 0.08em;
+  }
+
+  /* "NEXT UP" gold foil banner across the top of the recommended card */
+  .day-tile.recommended::before {
+    content: "★ NEXT UP";
+    position: absolute;
+    top: -2px; left: -2px; right: -2px;
+    z-index: 3;
+    padding: 3px 6px;
+    background: linear-gradient(90deg, #F2C13C, #E0A400, #F2C13C);
+    background-size: 200% 100%;
+    animation: shine 3s linear infinite;
+    color: #17171C;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-align: center;
+    border-bottom: 2px solid #17171C;
+  }
+  @keyframes shine { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+
+  .day-tile.recommended {
+    border-color: #F2C13C;
+    box-shadow:
       inset 0 0 0 2px #17171C,
       inset 0 0 0 4px var(--surface-1),
       0 4px 0 rgba(0,0,0,0.3),
-      0 0 20px rgba(234,176,0,0.5),
-      0 10px 26px rgba(0,0,0,0.35); }
-  .day-tile.recommended::before {
-    background: linear-gradient(180deg, #F2C13C, #E0A400);
-    color: #17171C;
-    border: 1px solid #17171C;
+      0 0 22px rgba(234,176,0,0.6),
+      0 10px 26px rgba(0,0,0,0.35);
   }
-  .day-tile .day-key { color: #17171C; }
-  .day-tile .day-key .d { color: var(--ink-mute); }
-  .day-name { color: var(--ink); }
+  .day-tile.recommended .tcg-head { padding-top: 20px; }
+
+  /* Suppress old classes that are no longer used in the redesigned tile */
+  .day-tile .day-key, .day-tile .day-name, .day-tile .day-tag, .day-tile .day-last { display: none; }
 
   /* ACTIVITY STRIP — training record card */
   .strip-card { padding: 14px 16px; }
@@ -1611,6 +1802,45 @@
   }
   .ex-cues-toggle { color: var(--ink-faint); }
   .ex-cues-toggle:hover { color: var(--ink-dim); }
+
+  /* Attack-row inside exercise card */
+  .ex-attack-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin: 6px 0 10px 100px;
+    padding: 6px 10px;
+    background: #FFFFFF;
+    border: 2px solid var(--line);
+    border-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .ex-card.done .ex-attack-row {
+    background: linear-gradient(180deg, #E7F5D4, #C7E8A3);
+    border-color: var(--day-b);
+  }
+  .ex-energy {
+    font-size: 14px;
+    letter-spacing: -3px;
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.3));
+  }
+  .ex-attack-name {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .ex-attack-damage {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    text-shadow:
+      -1px -1px 0 rgba(255,255,255,0.5),
+      1px 1px 0 rgba(0,0,0,0.15);
+  }
 
   /* SETS TABLE — attack damage entries */
   .set-row.header { border-bottom: 2px solid var(--line); }
