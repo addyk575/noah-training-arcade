@@ -27,8 +27,10 @@ const EX_IMAGES = {
   incline:   "Incline_Dumbbell_Press",
   trxrow:    "Body_Tightening_Exercise", // trx inverted row not in DB; approximate
   lraise:    "Side_Lateral_Raise",
+  dips:      "Dips",
   pushup:    "Pushups",
   farmer:    "Farmers_Walk",
+  sdbcurl:   "Dumbbell_Alternate_Bicep_Curl",
 
   // Day D
   jumpsq:      "Jump_Squat",
@@ -56,8 +58,10 @@ const EX_IMG_FALLBACKS = {
   incline:   "Incline_Dumbbell_Bench_With_Palms_Facing_In",
   trxrow:    "Inverted_Row",
   lraise:    "Dumbbell_Raise",
+  dips:      "Dips_-_Triceps_Version",
   pushup:    "Pushups_-_Close_Triceps_Position",
   farmer:    "Dumbbell_Shrug",
+  sdbcurl:   "Seated_Dumbbell_Curl",
   jumpsq:    "Jump_Squat",
   broadjump: "Double_Leg_Butt_Kick",
   skater:    "Lateral_Bound",

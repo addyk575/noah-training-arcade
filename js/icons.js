@@ -51,6 +51,17 @@ const EX_ICONS = {
     <path d="M18 24 L20 20 L24 22" stroke-width="2"/>
   </svg>`,
 
+  sdbcurl: `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="10" y="34" width="44" height="6" rx="1" fill="currentColor" fill-opacity="0.12"/>
+    <line x1="14" y1="40" x2="14" y2="54"/>
+    <line x1="50" y1="40" x2="50" y2="54"/>
+    <rect x="40" y="10" width="6" height="26" rx="1" fill="currentColor" fill-opacity="0.15"/>
+    <circle cx="30" cy="22" r="4"/>
+    <path d="M30 26 L30 34"/>
+    <path d="M30 28 Q36 22 42 28" stroke-width="2"/>
+    <circle cx="42" cy="28" r="3" fill="currentColor" fill-opacity="0.3"/>
+  </svg>`,
+
   plank: `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <line x1="8" y1="50" x2="56" y2="50"/>
     <rect x="12" y="32" width="40" height="8" rx="2" fill="currentColor" fill-opacity="0.12"/>
@@ -148,6 +159,21 @@ const EX_ICONS = {
     <circle cx="8" cy="30" r="4" fill="currentColor" fill-opacity="0.2"/>
     <circle cx="56" cy="30" r="4" fill="currentColor" fill-opacity="0.2"/>
     <path d="M8 18 L10 14 M56 18 L54 14" stroke-width="2"/>
+  </svg>`,
+
+  dips: `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="6" y="40" width="18" height="8" rx="1" fill="currentColor" fill-opacity="0.15"/>
+    <rect x="40" y="40" width="18" height="8" rx="1" fill="currentColor" fill-opacity="0.15"/>
+    <line x1="8" y1="48" x2="8" y2="58"/>
+    <line x1="22" y1="48" x2="22" y2="58"/>
+    <line x1="42" y1="48" x2="42" y2="58"/>
+    <line x1="56" y1="48" x2="56" y2="58"/>
+    <circle cx="32" cy="16" r="4"/>
+    <path d="M32 20 L32 32"/>
+    <path d="M32 26 L22 40"/>
+    <path d="M32 26 L42 40"/>
+    <path d="M32 32 L28 46 L28 54"/>
+    <path d="M32 32 L36 46 L36 54"/>
   </svg>`,
 
   pushup: `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
