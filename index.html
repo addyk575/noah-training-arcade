@@ -1271,6 +1271,27 @@
   /* Scrollbar subtle */
   ::-webkit-scrollbar { width: 0; }
 
+  /* Sync status dot in the header */
+  .sync-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #6F6F78;
+    border: 1.5px solid rgba(255,255,255,0.5);
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .sync-dot.off        { background: #6F6F78; }
+  .sync-dot.idle       { background: #F2C13C; }
+  .sync-dot.connecting { background: #F2C13C; animation: syncPulse 1s ease-in-out infinite; }
+  .sync-dot.connected  { background: #10F8A0; box-shadow: 0 0 8px rgba(16,248,160,0.6); }
+  .sync-dot.error      { background: #EE1B2A; }
+  @keyframes syncPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
   /* ============================================================
      POKEMON TCG SKIN OVERRIDES
      All HTML/JS stays the same — we just restyle existing classes.
@@ -2064,7 +2085,10 @@
     <div class="brand-mark">N</div>
     <div class="brand-title">NOAH <span>/ TRAINING</span></div>
   </div>
-  <div class="header-date" id="header-date"></div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button id="sync-dot" class="sync-dot off" title="Sync off" onclick="openSyncModal()"></button>
+    <div class="header-date" id="header-date"></div>
+  </div>
 </header>
 
 <!-- HOME VIEW -->
@@ -2105,6 +2129,10 @@
       <button class="swatch" style="width:auto;height:auto;flex:1;padding:6px;font-size:10px;font-weight:700;letter-spacing:0.08em;" onclick="setDensity('comfy')">COMFY</button>
       <button class="swatch" style="width:auto;height:auto;flex:1;padding:6px;font-size:10px;font-weight:700;letter-spacing:0.08em;" onclick="setDensity('compact')">COMPACT</button>
     </div>
+  </div>
+  <div class="tweak-row">
+    <div class="l">Family sync</div>
+    <button class="swatch" style="width:100%;height:auto;padding:8px;font-size:10px;font-weight:700;letter-spacing:0.08em;" onclick="openSyncModal()">SET SYNC CODE</button>
   </div>
 </div>
 
@@ -2213,17 +2241,29 @@ document.body.dataset.density = TWEAKS.density;
 </script>
 
 <!-- Data + app scripts -->
-<script src="js/icons.js?v=6"></script>
-<script src="js/images.js?v=6"></script>
-<script src="js/data.js?v=6"></script>
-<script src="js/state.js?v=6"></script>
-<script src="js/share.js?v=6"></script>
-<script src="js/views-home.js?v=6"></script>
-<script src="js/views-workout.js?v=6"></script>
-<script src="js/views-plan.js?v=6"></script>
-<script src="js/views-progress.js?v=6"></script>
-<script src="js/views-history.js?v=6"></script>
-<script src="js/views-guide.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+<!-- Firebase SDK (Realtime Database) — loaded before our sync code -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+
+<script src="js/icons.js?v=8"></script>
+<script src="js/images.js?v=8"></script>
+<script src="js/data.js?v=8"></script>
+<script src="js/state.js?v=8"></script>
+<script src="js/share.js?v=8"></script>
+<script src="js/sync-config.js?v=8"></script>
+<script src="js/sync.js?v=8"></script>
+<script src="js/views-home.js?v=8"></script>
+<script src="js/views-workout.js?v=8"></script>
+<script src="js/views-plan.js?v=8"></script>
+<script src="js/views-progress.js?v=8"></script>
+<script src="js/views-history.js?v=8"></script>
+<script src="js/views-guide.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
+
+<script>
+  // Boot sync after everything is loaded
+  if (typeof wireSyncHook === 'function') wireSyncHook();
+  if (typeof initSync === 'function') initSync();
+</script>
 </body>
 </html>
