@@ -1271,6 +1271,32 @@
   /* Scrollbar subtle */
   ::-webkit-scrollbar { width: 0; }
 
+  /* Quest recent-sessions row */
+  .quest-recent {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0 4px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(0,0,0,0.2);
+    flex-wrap: wrap;
+  }
+  .quest-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.4);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+    flex-shrink: 0;
+  }
+  .quest-recent-l {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: rgba(0,0,0,0.55);
+    letter-spacing: 0.04em;
+    margin-left: 4px;
+  }
+
   /* Sync status dot in the header */
   .sync-dot {
     width: 10px;
@@ -2245,20 +2271,20 @@ document.body.dataset.density = TWEAKS.density;
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 
-<script src="js/icons.js?v=8"></script>
-<script src="js/images.js?v=8"></script>
-<script src="js/data.js?v=8"></script>
-<script src="js/state.js?v=8"></script>
-<script src="js/share.js?v=8"></script>
-<script src="js/sync-config.js?v=8"></script>
-<script src="js/sync.js?v=8"></script>
-<script src="js/views-home.js?v=8"></script>
-<script src="js/views-workout.js?v=8"></script>
-<script src="js/views-plan.js?v=8"></script>
-<script src="js/views-progress.js?v=8"></script>
-<script src="js/views-history.js?v=8"></script>
-<script src="js/views-guide.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/icons.js?v=9"></script>
+<script src="js/images.js?v=9"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/state.js?v=9"></script>
+<script src="js/share.js?v=9"></script>
+<script src="js/sync-config.js?v=9"></script>
+<script src="js/sync.js?v=9"></script>
+<script src="js/views-home.js?v=9"></script>
+<script src="js/views-workout.js?v=9"></script>
+<script src="js/views-plan.js?v=9"></script>
+<script src="js/views-progress.js?v=9"></script>
+<script src="js/views-history.js?v=9"></script>
+<script src="js/views-guide.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 
 <script>
   // Boot sync after everything is loaded

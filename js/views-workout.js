@@ -248,12 +248,19 @@ function finishWorkout() {
 
   if (isWorkoutValid(workout)) {
     const prog = getCurrentWindowProgress();
-    if (prog.earned) toast(`Session banked. ${prog.count} / 4 — allowance earned 🔒`, 'success');
-    else toast(`Session banked. ${prog.count} / 4 this window.`, 'success');
+    if (prog.justCompleted) {
+      toast(`🔓 QUEST COMPLETE! Phone unlocked for 8 days.`, 'success');
+    } else if (prog.unlocked) {
+      toast(`Session banked. ${prog.count} / 4 toward next quest.`, 'success');
+    } else {
+      toast(`Session banked. ${prog.count} / 4 this quest.`, 'success');
+    }
   } else {
     toast("Logged, but not enough sets to count yet.");
   }
   state.currentWorkout = null;
   saveState();
+  // Force-flush sync immediately so the other phone sees this session right away
+  if (typeof pushLocal === 'function') pushLocal(true);
   showView('home');
 }

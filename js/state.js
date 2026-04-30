@@ -61,9 +61,59 @@ function workoutsInLast8Days() {
   return state.workouts.filter(w => isWorkoutValid(w) && daysAgo(w.date) < 8);
 }
 
+/**
+ * Reset-on-completion quest:
+ * - Walk all valid workouts in chronological order
+ * - Every 4 workouts = a quest completion (sets unlock for 8 days from that 4th session)
+ * - Counter resets to 0 after each completion → starts a new quest period
+ * - "Unlocked" status is sticky for 8 days from the most recent completion
+ */
 function getCurrentWindowProgress() {
-  const valid = workoutsInLast8Days();
-  return { count: valid.length, target: 4, earned: valid.length >= 4, workouts: valid };
+  const valid = state.workouts.filter(isWorkoutValid).sort((a, b) => {
+    return a.date.localeCompare(b.date) || a.id - b.id;
+  });
+  const target = 4;
+
+  let countSinceCompletion = 0;
+  const completions = []; // [{ date, sessionId }] for each quest completion in history
+  for (const w of valid) {
+    countSinceCompletion++;
+    if (countSinceCompletion >= target) {
+      completions.push({ date: w.date, sessionId: w.id });
+      countSinceCompletion = 0;
+    }
+  }
+
+  // If the most recent session WAS the quest-completer, show 4/4 (don't reset visually until next session)
+  const lastSession = valid[valid.length - 1];
+  const lastCompletion = completions[completions.length - 1] || null;
+  const justCompleted = !!(lastCompletion && lastSession && lastCompletion.sessionId === lastSession.id);
+  const count = justCompleted ? target : countSinceCompletion;
+
+  // Unlock window: 8 days from last completion date
+  let unlockExpiresAt = null;
+  let unlockDaysLeft = 0;
+  if (lastCompletion) {
+    const d = new Date(lastCompletion.date + 'T00:00:00');
+    d.setDate(d.getDate() + 8);
+    unlockExpiresAt = d.toISOString().slice(0, 10);
+    unlockDaysLeft = Math.max(0, 8 - daysAgo(lastCompletion.date));
+  }
+  const unlocked = unlockDaysLeft > 0;
+
+  return {
+    count,
+    target,
+    earned: unlocked, // back-compat: views check `earned` to apply the unlocked styling
+    unlocked,
+    justCompleted,
+    unlockExpiresAt,
+    unlockDaysLeft,
+    lastCompletionDate: lastCompletion ? lastCompletion.date : null,
+    questNumber: completions.length + (justCompleted ? 0 : 1), // 1-indexed for display
+    completions,
+    workouts: valid,
+  };
 }
 
 /* ============ RECOMMENDED NEXT DAY ============ */

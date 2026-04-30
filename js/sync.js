@@ -118,14 +118,40 @@ function pushLocal(immediate) {
       updatedAt: Date.now(),
     };
     _lastRemoteUpdatedAt = payload.updatedAt;
-    _syncRef.set(payload).catch((err) => {
-      console.warn('[sync] push error', err);
-      updateSyncIndicator('error');
-    });
+    updateSyncIndicator('connecting');
+    _syncRef.set(payload)
+      .then(() => updateSyncIndicator('connected'))
+      .catch((err) => {
+        console.warn('[sync] push error', err);
+        updateSyncIndicator('error');
+      });
   };
   if (immediate) doPush();
-  else _pushTimer = setTimeout(doPush, 500);
+  else _pushTimer = setTimeout(doPush, 100);
 }
+
+// Force a fresh pull from the cloud (used on tab focus / "Sync now")
+function forcePull() {
+  if (!_syncEnabled || !_syncRef) return;
+  _syncRef.once('value').then((snap) => {
+    const remote = snap.val();
+    if (remote) {
+      _lastRemoteUpdatedAt = 0; // bypass the dedup check
+      applyRemote(remote);
+      _lastRemoteUpdatedAt = remote.updatedAt || Date.now();
+    }
+    updateSyncIndicator('connected');
+  }).catch((err) => {
+    console.warn('[sync] forcePull error', err);
+    updateSyncIndicator('error');
+  });
+}
+
+// Auto-pull on focus / visibility — handles "phone was backgrounded for hours"
+window.addEventListener('focus', () => { if (_syncEnabled) forcePull(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && _syncEnabled) forcePull();
+});
 
 // Save to localStorage WITHOUT pushing to cloud (used when applying remote)
 function saveStateLocalOnly() {
@@ -176,6 +202,7 @@ function openSyncModal() {
       <input type="text" class="modal-input" id="sync-code-input" value="${current}" placeholder="${suggested}" autocapitalize="off" autocorrect="off" autocomplete="off">
       <div class="modal-actions">
         <button class="modal-btn ghost" id="sync-cancel">Cancel</button>
+        ${current ? '<button class="modal-btn ghost" id="sync-pull">Sync now</button>' : ''}
         ${current ? '<button class="modal-btn ghost" id="sync-disconnect">Disconnect</button>' : ''}
         <button class="modal-btn primary" id="sync-save">${current ? 'Update' : 'Connect'}</button>
       </div>
@@ -183,6 +210,13 @@ function openSyncModal() {
     </div>`;
   document.body.appendChild(modal);
   document.getElementById('sync-cancel').onclick = () => modal.remove();
+  const pullBtn = document.getElementById('sync-pull');
+  if (pullBtn) pullBtn.onclick = () => {
+    forcePull();
+    modal.remove();
+    if (typeof showToast === 'function') showToast('Syncing…');
+    if (typeof toast === 'function') toast('Syncing…');
+  };
   const disc = document.getElementById('sync-disconnect');
   if (disc) disc.onclick = () => {
     if (!confirm('Disconnect sync? Your data will stay on this phone but stop syncing.')) return;

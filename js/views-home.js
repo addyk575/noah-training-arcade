@@ -10,7 +10,7 @@ function renderHome() {
   const { wd, md } = formatWeekday();
   document.getElementById('header-date').innerHTML = `<b>${wd.toUpperCase()}</b><br>${md.toUpperCase()}`;
 
-  // Hero segments
+  // Hero segments — fill based on current quest progress (out of 4)
   const segs = [];
   for (let i = 0; i < 4; i++) {
     const filled = i < prog.count;
@@ -18,31 +18,62 @@ function renderHome() {
     segs.push(`<div class="hero-seg ${filled ? 'filled' : ''} ${today ? 'today' : ''}"></div>`);
   }
 
-  let msg;
-  if (prog.earned) {
-    msg = `<b>Allowance earned.</b> ${prog.count} workouts banked in the last 8 days. Keep stacking — every extra session compounds.`;
-  } else if (prog.count === 0) {
-    msg = `Target: <b>4 workouts in 8 days</b>. Start today. Your next session is <b>Day ${recDay} — ${rec.name}</b>.`;
-  } else {
-    const oldestAge = Math.max(...prog.workouts.map(w => daysAgo(w.date)));
-    const daysLeft = 8 - oldestAge;
+  // Status line + headline message based on quest state
+  let statusText, msg, statusBadge;
+  if (prog.justCompleted) {
+    // Just hit 4/4 — celebrate
+    statusText = 'QUEST COMPLETE';
+    statusBadge = `🔓 UNLOCKED · ${prog.unlockDaysLeft} DAY${prog.unlockDaysLeft !== 1 ? 'S' : ''} LEFT`;
+    msg = `<b>Phone unlocked through ${formatDate(prog.unlockExpiresAt)}.</b> Next quest starts on your next session — train ${prog.unlockDaysLeft <= 4 ? 'soon' : 'whenever'} to chain another unlock.`;
+  } else if (prog.unlocked && prog.count === 0) {
+    // Unlocked, no progress on next quest yet
+    statusText = 'UNLOCKED';
+    statusBadge = `🔓 UNLOCKED · ${prog.unlockDaysLeft} DAY${prog.unlockDaysLeft !== 1 ? 'S' : ''} LEFT`;
+    msg = `Phone good through <b>${formatDate(prog.unlockExpiresAt)}</b>. Next quest: <b>0/4 sessions</b>. Start <b>Day ${recDay}</b> to begin earning the next unlock.`;
+  } else if (prog.unlocked) {
+    // Unlocked AND working on next quest
+    statusText = 'NEXT QUEST IN PROGRESS';
+    statusBadge = `🔓 UNLOCKED · ${prog.unlockDaysLeft} DAY${prog.unlockDaysLeft !== 1 ? 'S' : ''} LEFT`;
     const need = 4 - prog.count;
-    msg = `<b>${need} more to earn this window.</b> Oldest counted session drops off in <b>${daysLeft} day${daysLeft !== 1 ? 's' : ''}</b>.`;
+    msg = `Currently unlocked through <b>${formatDate(prog.unlockExpiresAt)}</b>. <b>${need} more session${need !== 1 ? 's' : ''}</b> to chain the next unlock.`;
+  } else if (prog.count === 0 && prog.completions.length === 0) {
+    // First quest ever
+    statusText = 'EARN SCREEN TIME';
+    statusBadge = '🔒 LOCKED';
+    msg = `Hit <b>4 sessions</b> to unlock your phone for 8 days. Your first session is <b>Day ${recDay} — ${rec.name}</b>.`;
+  } else {
+    // Lost unlock or in progress on a fresh quest
+    const need = 4 - prog.count;
+    statusText = 'EARN SCREEN TIME';
+    statusBadge = '🔒 LOCKED';
+    msg = `<b>${need} more session${need !== 1 ? 's' : ''}</b> to unlock your phone for the next 8 days. Next up: <b>Day ${recDay}</b>.`;
   }
+
+  // Recent session dots — show last few quest sessions with dates
+  const recentSessions = prog.justCompleted
+    ? prog.workouts.slice(-4)
+    : (prog.count > 0 ? prog.workouts.slice(-prog.count) : []);
+  const recentDotsHtml = recentSessions.length > 0
+    ? `<div class="quest-recent">${recentSessions.map(w => {
+        const ws = WORKOUTS[w.dayKey];
+        return `<span class="quest-dot" style="background:${ws.color}" title="Day ${w.dayKey} · ${formatDate(w.date)}"></span>`;
+      }).join('')}<span class="quest-recent-l">${recentSessions.map(w => formatDate(w.date).toUpperCase()).join(' · ')}</span></div>`
+    : '';
 
   // Hero
   const heroHtml = `
     <div class="hero ${prog.earned ? 'earned' : ''}">
       <div class="hero-top">
-        <div class="hero-status">${prog.earned ? 'ALLOWANCE EARNED' : 'IN PROGRESS'}</div>
-        <div class="hero-window">8-DAY WINDOW · W${currentWeekNum()}</div>
+        <div class="hero-status">${statusText}</div>
+        <div class="hero-window">QUEST ${prog.questNumber} · W${currentWeekNum()}</div>
       </div>
       <div class="hero-count">
         <div class="num t-tnum">${prog.count}</div>
         <div class="frac">/ 4</div>
-        <div class="tag">WORKOUTS<br><b>LOGGED</b></div>
+        <div class="tag">${prog.unlocked ? statusBadge : 'SESSIONS<br><b>THIS QUEST</b>'}</div>
       </div>
       <div class="hero-bar">${segs.join('')}</div>
+      ${recentDotsHtml}
       <div class="hero-msg">${msg}</div>
     </div>`;
 
