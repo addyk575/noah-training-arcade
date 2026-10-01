@@ -10,14 +10,14 @@ export function Log({ sessions }: { sessions: Session[] }) {
   return (
     <div>
       <div className="px-5 pt-8">
-        <h1 className="text-[28px] font-bold">History</h1>
-        <div className="text-[14px] text-mute mt-1">{done.length} workout{done.length === 1 ? '' : 's'} logged</div>
+        <h1 className="text-[32px] font-bold">History</h1>
+        <div className="text-[17px] text-mute mt-1">{done.length} workout{done.length === 1 ? '' : 's'} logged</div>
       </div>
 
       {done.length === 0 && (
         <div className="card mx-4 mt-5 p-5 text-center">
-          <div className="text-[15px] font-semibold">Nothing here yet</div>
-          <div className="text-[14px] text-mute mt-1">Finished workouts show up here.</div>
+          <div className="text-[18px] font-semibold">Nothing here yet</div>
+          <div className="text-[17px] text-mute mt-1">Finished workouts show up here.</div>
         </div>
       )}
 
@@ -34,11 +34,11 @@ export function Log({ sessions }: { sessions: Session[] }) {
               <button onClick={() => setOpen(isOpen ? null : s.id)} className="w-full p-4 flex items-center gap-3 text-left">
                 <div className="w-1 self-stretch rounded-full" style={{ background: day.color }} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] text-mute">
+                  <div className="text-[16px] text-mute">
                     {end.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                   </div>
-                  <div className="text-[16px] font-semibold">{day.name}</div>
-                  <div className="text-[13px] text-dim mt-0.5">
+                  <div className="text-[19px] font-semibold">{day.name}</div>
+                  <div className="text-[16px] text-dim mt-0.5">
                     {logged.length} exercise{logged.length === 1 ? '' : 's'} · {minutes} min
                     {s.pr.length > 0 && <span className="text-warn font-semibold"> · {s.pr.length} PR</span>}
                   </div>
@@ -51,7 +51,7 @@ export function Log({ sessions }: { sessions: Session[] }) {
                     const ex = getExercise(le.exerciseId);
                     if (!ex) return null;
                     return (
-                      <div key={le.exerciseId} className="flex justify-between gap-3 text-[14px]">
+                      <div key={le.exerciseId} className="flex justify-between gap-3 text-[17px]">
                         <span className="text-dim">{ex.name}</span>
                         <span className="tabular-nums text-right">
                           {le.sets.map((st) => (ex.unit === 'lb' ? `${st.weight}×${st.reps}` : ex.unit === 'sec' ? `${st.reps}s` : st.reps)).join(', ')}

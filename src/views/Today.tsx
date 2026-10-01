@@ -48,30 +48,30 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
     <div>
       <div className="px-5 pt-8 flex items-start justify-between">
         <div>
-          <div className="text-[13px] font-medium text-mute">
+          <div className="text-[16px] font-medium text-mute">
             {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
           </div>
-          <h1 className="text-[28px] font-bold leading-tight mt-0.5">{greeting(now)}, Addy</h1>
+          <h1 className="text-[32px] font-bold leading-tight mt-0.5">{greeting(now)}, Addy</h1>
         </div>
         <div className="flex items-center gap-1 rounded-full bg-card border border-line px-3 h-9 mt-1">
           <FlameIcon size={16} className={streak > 0 ? 'text-warn' : 'text-mute'} />
-          <span className="text-[14px] font-semibold tabular-nums">{streak}</span>
+          <span className="text-[17px] font-semibold tabular-nums">{streak}</span>
         </div>
       </div>
 
       {finished && (
         <div className="mx-4 mt-5 rounded-2xl bg-good/10 border border-good/30 p-4">
-          <div className="flex items-center gap-2 text-good font-semibold text-[15px]">
+          <div className="flex items-center gap-2 text-good font-semibold text-[18px]">
             <CheckIcon size={18} /> Workout saved
           </div>
-          <div className="text-[14px] text-dim mt-1">
+          <div className="text-[17px] text-dim mt-1">
             {finished.dayName} · {finished.sets} sets · {finished.minutes} min
           </div>
           <div className="flex gap-2 mt-3">
-            <button onClick={() => share(finished.text)} className="btn-primary flex-1 h-10 text-[14px] flex items-center justify-center gap-1.5">
+            <button onClick={() => share(finished.text)} className="btn-primary flex-1 h-10 text-[17px] flex items-center justify-center gap-1.5">
               <LinkIcon size={16} /> Share with coach
             </button>
-            <button onClick={onDismissFinished} className="btn-secondary px-4 h-10 text-[14px]">
+            <button onClick={onDismissFinished} className="btn-secondary px-4 h-10 text-[17px]">
               Done
             </button>
           </div>
@@ -88,47 +88,47 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
               <button
                 key={d}
                 onClick={() => setPicked(d)}
-                className={`h-14 rounded-lg flex flex-col items-center justify-center transition-colors ${on ? 'bg-card2' : ''}`}
+                className={`h-16 rounded-lg flex flex-col items-center justify-center transition-colors ${on ? 'bg-card2' : ''}`}
               >
-                <span className="text-[12px] font-bold" style={{ color: on ? w.color : undefined }}>
+                <span className="text-[15px] font-bold" style={{ color: on ? w.color : undefined }}>
                   Day {d}
                 </span>
-                <span className={`text-[13px] font-medium ${on ? 'text-ink' : 'text-mute'}`}>{w.name.split(' ')[0]}</span>
+                <span className={`text-[16px] font-medium ${on ? 'text-ink' : 'text-mute'}`}>{w.name.split(' ')[0]}</span>
               </button>
             );
           })}
         </div>
         <div className="p-4">
-          <div className="text-[13px] font-semibold" style={{ color: day.color }}>
+          <div className="text-[16px] font-semibold" style={{ color: day.color }}>
             Day {day.key}
             {picked === inProgress?.day ? ' · in progress' : picked === recommended && !inProgress ? ' · up next' : ''}
           </div>
-          <div className="text-[22px] font-bold leading-tight">{day.name}</div>
-          <div className="text-[14px] text-dim mt-1">
+          <div className="text-[26px] font-bold leading-tight">{day.name}</div>
+          <div className="text-[17px] text-dim mt-1">
             {day.exercises.length} exercises · about {day.duration} min
           </div>
           <div className="flex gap-2 mt-4 overflow-x-auto -mx-4 px-4 no-scrollbar">
             {day.exercises.map((ex) => (
-              <div key={ex.id} className="w-[76px] shrink-0">
-                <Thumb id={ex.id} size={76} />
-                <div className="text-[11px] text-dim leading-tight mt-1 line-clamp-2">{ex.name}</div>
+              <div key={ex.id} className="w-[96px] shrink-0">
+                <Thumb id={ex.id} size={96} />
+                <div className="text-[14px] text-dim leading-tight mt-1 line-clamp-2">{ex.name}</div>
               </div>
             ))}
           </div>
         </div>
-        <button onClick={() => onStart(picked)} className="btn-primary w-full h-14 rounded-none text-[16px]">
+        <button onClick={() => onStart(picked)} className="btn-primary w-full h-16 rounded-none text-[20px]">
           {picked === inProgress?.day ? 'Resume workout' : `Start Day ${picked}`}
         </button>
       </div>
 
       <div className="card mx-4 mt-6 p-4">
         <div className="flex items-baseline justify-between">
-          <div className="text-[15px] font-semibold">Weekly goal</div>
-          <div className="text-[13px] text-mute">last 7 days</div>
+          <div className="text-[18px] font-semibold">Weekly goal</div>
+          <div className="text-[16px] text-mute">last 7 days</div>
         </div>
         <div className="flex items-baseline gap-1 mt-2">
-          <span className="text-[34px] font-bold leading-none tabular-nums">{count}</span>
-          <span className="text-[18px] text-mute font-semibold">/ {GOAL} workouts</span>
+          <span className="text-[40px] font-bold leading-none tabular-nums">{count}</span>
+          <span className="text-[22px] text-mute font-semibold">/ {GOAL} workouts</span>
         </div>
         <div className="flex gap-1.5 mt-3">
           {Array.from({ length: GOAL }).map((_, i) => (
@@ -138,9 +138,9 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
         <div className="grid grid-cols-7 gap-1.5 mt-4">
           {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((l, i) => (
             <div key={i} className="flex flex-col items-center gap-1">
-              <span className={`text-[11px] font-medium ${i === todayIdx ? 'text-ink' : 'text-mute'}`}>{l}</span>
+              <span className={`text-[14px] font-medium ${i === todayIdx ? 'text-ink' : 'text-mute'}`}>{l}</span>
               <div
-                className={`w-8 h-8 rounded-full grid place-items-center ${
+                className={`w-10 h-10 rounded-full grid place-items-center ${
                   week[i] ? 'bg-good text-white' : i === todayIdx ? 'border-2 border-accent' : 'bg-card2'
                 }`}
               >

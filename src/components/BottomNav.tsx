@@ -21,10 +21,10 @@ export function BottomNav({ active, onChange }: { active: Tab; onChange: (t: Tab
           <button
             key={key}
             onClick={() => onChange(key)}
-            className={`flex-1 h-[60px] flex flex-col items-center justify-center gap-1 ${on ? 'text-accent' : 'text-mute'}`}
+            className={`flex-1 h-[68px] flex flex-col items-center justify-center gap-1 ${on ? 'text-accent' : 'text-mute'}`}
           >
-            <Icon size={22} />
-            <span className="text-[11px] font-medium">{label}</span>
+            <Icon size={26} />
+            <span className="text-[14px] font-medium">{label}</span>
           </button>
         );
       })}

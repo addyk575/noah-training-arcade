@@ -35,7 +35,7 @@ export function Demo({ id }: { id: string }) {
         {(['Start', 'Finish'] as const).map((l, i) => (
           <span
             key={l}
-            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+            className={`text-[14px] font-semibold px-2 py-0.5 rounded-full ${
               frame === i ? 'bg-white text-black' : 'bg-black/50 text-white/70'
             }`}
           >
