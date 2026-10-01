@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { WORKOUTS, videoUrl, type Exercise } from '../data/workouts';
 import type { LoggedExercise, LoggedSet, Session } from '../state/store';
-import { lastSets } from '../state/progress';
+import { lastSets, setScore as score } from '../state/progress';
 import { Demo, Photo } from '../components/ExerciseImage';
 import { CheckIcon, ChevronLeft, ChevronRight, PlayIcon, PlusIcon } from '../components/Icons';
+import { RestTimer, type RestState } from '../components/RestTimer';
+import { Toast, type ToastMsg } from '../components/Toast';
+import { smallBurst } from '../lib/celebrate';
 
 type Props = {
   current: Session;
@@ -58,6 +61,10 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
   const day = WORKOUTS[current.day];
   const [now, setNow] = useState(() => Date.now());
   const [openId, setOpenId] = useState<string | null>(null);
+  const [rest, setRest] = useState<RestState | null>(null);
+  const [superNext, setSuperNext] = useState<Exercise | null>(null);
+  const [toast, setToast] = useState<ToastMsg | null>(null);
+  const clearToast = useCallback(() => setToast(null), []);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -75,10 +82,76 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
   const anyLogged = current.exercises.some((e) => e.sets.length > 0);
 
   const logSet = (ex: Exercise, weight: number, reps: number) => {
-    const count = loggedFor(ex.id).sets.length + 1;
+    const le = loggedFor(ex.id);
+    const count = le.sets.length + 1;
+    const set = { weight, reps };
+    const history = allSessions.flatMap((s) => s.exercises.filter((e) => e.exerciseId === ex.id).flatMap((e) => e.sets));
+    const prevBest = Math.max(0, ...history.map((h) => score(ex, h)), ...le.sets.map((h) => score(ex, h)));
+    const isBest = history.length > 0 && score(ex, set) > prevBest;
+    const finishedEx = count >= ex.sets;
+
     onLogSet(ex.id, weight, reps);
-    if (count >= ex.sets) onMarkComplete(ex.id, true);
+    if (finishedEx) onMarkComplete(ex.id, true);
+
+    if (isBest) {
+      smallBurst();
+      setToast({ id: Date.now(), icon: '🏆', title: 'New personal best!', detail: `${ex.name}: ${formatSet(ex, set)}` });
+    } else if (finishedEx) {
+      smallBurst();
+      setToast({ id: Date.now(), icon: '💪', title: 'Exercise done!', detail: ex.name });
+    }
+
+    const allDone = finishedEx && day.exercises.every((e) => e.id === ex.id || loggedFor(e.id).completed);
+    if (allDone) {
+      setRest(null);
+      setSuperNext(null);
+      setToast({ id: Date.now(), icon: '🎉', title: 'Every exercise done!', detail: 'Tap Finish to wrap up.' });
+      return;
+    }
+
+    const group = ex.superset ? day.exercises.filter((e) => e.superset === ex.superset) : [ex];
+    const partner = group[group.indexOf(ex) + 1];
+    if (partner && loggedFor(partner.id).sets.length < count) {
+      setRest(null);
+      setSuperNext(partner);
+      return;
+    }
+
+    let next: Exercise | undefined;
+    if (group.length > 1 && group[0].id !== ex.id && loggedFor(group[0].id).sets.length < group[0].sets) next = group[0];
+    else if (finishedEx) next = day.exercises.find((e, i) => i > day.exercises.indexOf(ex) && !loggedFor(e.id).completed);
+    const secs = ex.xp >= 40 ? 90 : 60;
+    setSuperNext(null);
+    setRest({ endsAt: Date.now() + secs * 1000, total: secs, next: next ? { id: next.id, label: next.name } : undefined });
   };
+
+  const goTo = (id: string) => {
+    setRest(null);
+    setSuperNext(null);
+    setOpenId(id);
+  };
+
+  const overlays = (
+    <>
+      {toast && <Toast msg={toast} onDone={clearToast} />}
+      {rest && <RestTimer rest={rest} onChange={setRest} onClose={() => setRest(null)} onGo={goTo} />}
+      {superNext && !rest && (
+        <div
+          className="fixed bottom-0 inset-x-0 z-30 mx-auto max-w-[480px] bg-card border-t-2 border-accent rounded-t-3xl px-5 pt-4 animate-slide-up"
+          style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+        >
+          <div className="text-[19px] font-extrabold text-accent uppercase tracking-wide">Superset · no rest yet</div>
+          <div className="text-[25px] font-bold leading-tight mt-1">Now do: {superNext.name}</div>
+          <button onClick={() => goTo(superNext.id)} className="btn-primary w-full h-16 mt-3 text-[23px] flex items-center justify-center gap-1">
+            Go <ChevronRight size={26} />
+          </button>
+          <button onClick={() => setSuperNext(null)} className="w-full h-12 mt-1 text-[20px] text-mute">
+            Not now
+          </button>
+        </div>
+      )}
+    </>
+  );
 
   const undoSet = (ex: Exercise) => {
     const le = loggedFor(ex.id);
@@ -115,8 +188,9 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
     const partners = ex.superset ? day.exercises.filter((e) => e.superset === ex.superset && e.id !== ex.id) : [];
     const next = day.exercises[idx + 1];
     return (
-      <div className="pb-[130px]">
+      <div className={rest || superNext ? 'pb-[400px]' : 'pb-[130px]'}>
         {topBar}
+        {overlays}
         <div className="px-4 pt-4">
           <Demo id={ex.id} />
           {ex.demoNote && <p className="text-[21px] text-mute mt-2 leading-snug">{ex.demoNote}</p>}
@@ -151,7 +225,7 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
           )}
 
           <div className="card mt-4 p-4">
-            <div className="text-[22px] font-semibold text-dim mb-2">Coach notes</div>
+            <div className="text-[22px] font-semibold text-dim mb-2">Kayla’s notes</div>
             <ul className="space-y-1.5">
               {ex.cues.map((c, i) => (
                 <li key={i} className="text-[23px] leading-snug flex gap-2">
@@ -192,8 +266,9 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
   }
 
   return (
-    <div className="pb-10">
+    <div className={rest || superNext ? 'pb-[400px]' : 'pb-10'}>
       {topBar}
+      {overlays}
       <div className="px-4 pt-5">
         <div className="text-[22px] font-semibold" style={{ color: day.color }}>
           Day {day.key}

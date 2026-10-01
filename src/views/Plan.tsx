@@ -12,7 +12,8 @@ export function Plan() {
   return (
     <div>
       <div className="px-5 pt-8">
-        <h1 className="text-[40px] font-bold">Program</h1>
+        <h1 className="text-[40px] font-bold leading-tight">Kayla’s Program</h1>
+        <div className="text-[21px] text-accent font-semibold mt-1">Designed by your coach, Kayla</div>
         <p
           className="text-[24px] text-dim leading-relaxed mt-2 [&>b]:text-ink [&>b]:font-semibold"
           dangerouslySetInnerHTML={html(PLAN_COPY.mission.body)}

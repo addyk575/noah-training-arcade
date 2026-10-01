@@ -1,5 +1,5 @@
 import type { LoggedSet, Session } from './store';
-import { WORKOUTS, DAY_ORDER, type DayKey, getExercise } from '../data/workouts';
+import { WORKOUTS, DAY_ORDER, type DayKey, type Exercise, getExercise } from '../data/workouts';
 
 export function sessionXp(session: Session): number {
   let xp = 0;
@@ -93,4 +93,8 @@ export function isPR(sessions: Session[], exerciseId: string, weight: number, re
     }
   }
   return score > 0;
+}
+
+export function setScore(ex: Exercise, s: LoggedSet): number {
+  return ex.unit === 'lb' ? s.weight * s.reps : s.reps;
 }

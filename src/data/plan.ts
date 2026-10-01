@@ -1,7 +1,7 @@
 export const PLAN_COPY = {
   mission: {
     title: 'The Mission',
-    body: 'Build <b>upper-body strength and size</b> with a 3-day gym split: <b>chest + triceps</b>, <b>back + biceps</b>, <b>shoulders</b>. About 45–50 minutes a session. Show up three times a week and beat last week’s numbers.',
+    body: 'Build <b>upper-body strength and size</b> with Kayla’s 3-day gym split: <b>chest + triceps</b>, <b>back + biceps</b>, <b>shoulders</b>. About 45–50 minutes a session. Show up three times a week and beat last week’s numbers.',
   },
   why: [
     { h: 'Why 3 days', p: 'Each muscle group gets one hard, focused day a week with plenty of recovery. Miss one? Do it next time you’re in. Just keep the A → B → C order.' },

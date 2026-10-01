@@ -16,6 +16,14 @@ export default {
         warn: '#F59E0B',
         bad: '#EF4444',
       },
+      keyframes: {
+        pop: { '0%': { transform: 'scale(0.85)', opacity: '0' }, '60%': { transform: 'scale(1.04)', opacity: '1' }, '100%': { transform: 'scale(1)' } },
+        slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } },
+      },
+      animation: {
+        pop: 'pop 300ms ease-out',
+        'slide-up': 'slideUp 250ms ease-out',
+      },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },

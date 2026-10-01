@@ -3,34 +3,16 @@ import { WORKOUTS, DAY_ORDER, type DayKey } from '../data/workouts';
 import type { Session } from '../state/store';
 import { allowanceCount, computeStreak, nextRecommendedDay, sessionsThisWeek, todayIndexInWeek } from '../state/progress';
 import { Thumb } from '../components/ExerciseImage';
-import { CheckIcon, FlameIcon, LinkIcon } from '../components/Icons';
-
-export type FinishedSummary = { dayName: string; sets: number; minutes: number; text: string };
+import { CheckIcon, FlameIcon } from '../components/Icons';
 
 type Props = {
   sessions: Session[];
   inProgress?: Session;
-  finished: FinishedSummary | null;
-  onDismissFinished: () => void;
   onStart: (day?: DayKey) => void;
 };
 
 const GOAL = 3;
-
-
-async function share(text: string) {
-  try {
-    if (navigator.share) {
-      await navigator.share({ text });
-      return;
-    }
-  } catch {
-    return;
-  }
-  window.location.href = `sms:?&body=${encodeURIComponent(text)}`;
-}
-
-export function Today({ sessions, inProgress, finished, onDismissFinished, onStart }: Props) {
+export function Today({ sessions, inProgress, onStart }: Props) {
   const now = new Date();
   const count = Math.min(allowanceCount(sessions, now), GOAL);
   const streak = computeStreak(sessions, now);
@@ -55,26 +37,8 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
         </div>
       </div>
 
-      {finished && (
-        <div className="mx-4 mt-5 rounded-2xl bg-good/10 border border-good/30 p-4">
-          <div className="flex items-center gap-2 text-good font-semibold text-[24px]">
-            <CheckIcon size={26} /> Workout saved
-          </div>
-          <div className="text-[23px] text-dim mt-1">
-            {finished.dayName} · {finished.sets} sets · {finished.minutes} min
-          </div>
-          <div className="flex gap-2 mt-3">
-            <button onClick={() => share(finished.text)} className="btn-primary flex-1 h-14 text-[22px] flex items-center justify-center gap-1.5">
-              <LinkIcon size={22} /> Share with coach
-            </button>
-            <button onClick={onDismissFinished} className="btn-secondary px-5 h-14 text-[22px]">
-              Done
-            </button>
-          </div>
-        </div>
-      )}
 
-      <div className="section-title">Workout</div>
+      <div className="section-title">Kayla’s program</div>
       <div className="card mx-4 overflow-hidden">
         <div className="flex flex-col gap-2 p-3 pb-0">
           {DAY_ORDER.map((d) => {

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useStore } from './state/useStore';
-import { nextRecommendedDay } from './state/progress';
+import { nextRecommendedDay, setScore } from './state/progress';
 import { BottomNav, type Tab } from './components/BottomNav';
-import { Today, type FinishedSummary } from './views/Today';
+import { Today } from './views/Today';
+import { Finish, type FinishedSummary } from './views/Finish';
 import { LiveSession } from './views/LiveSession';
 import { Plan } from './views/Plan';
 import { Stats } from './views/Stats';
@@ -11,22 +12,27 @@ import { getExercise, WORKOUTS, type DayKey } from './data/workouts';
 import type { Session } from './state/store';
 import { ConfirmSheet, type ConfirmRequest } from './components/ConfirmSheet';
 
-function summarize(session: Session): FinishedSummary {
+function summarize(session: Session, history: Session[]): FinishedSummary {
   const day = WORKOUTS[session.day];
-  const lines = [`Day ${session.day} · ${day.name} done.`];
+  const minutes = Math.max(1, Math.round((Date.now() - new Date(session.startedAt).getTime()) / 60000));
+  const lines = [`Hi Kayla! Day ${session.day} · ${day.name} done in ${minutes} min.`];
+  const prs: FinishedSummary['prs'] = [];
   let sets = 0;
+  let volume = 0;
   for (const le of session.exercises) {
     if (le.sets.length === 0) continue;
     const ex = getExercise(le.exerciseId);
     if (!ex) continue;
     sets += le.sets.length;
-    const str = le.sets
-      .map((s) => (ex.unit === 'lb' ? `${s.weight}×${s.reps}` : ex.unit === 'sec' ? `${s.reps}s` : `${s.reps}`))
-      .join(', ');
-    lines.push(`${ex.name}: ${str}`);
+    volume += le.sets.reduce((n, s) => n + s.weight * s.reps, 0);
+    const fmt = (s: { weight: number; reps: number }) =>
+      ex.unit === 'lb' ? `${s.weight}×${s.reps}` : ex.unit === 'sec' ? `${s.reps}s` : `${s.reps}`;
+    lines.push(`${ex.name}: ${le.sets.map(fmt).join(', ')}`);
+    const past = history.flatMap((h) => h.exercises.filter((e) => e.exerciseId === ex.id).flatMap((e) => e.sets));
+    const best = le.sets.reduce((a, b) => (setScore(ex, b) > setScore(ex, a) ? b : a));
+    if (past.length > 0 && setScore(ex, best) > Math.max(...past.map((s) => setScore(ex, s)))) prs.push({ name: ex.name, set: fmt(best) });
   }
-  const minutes = Math.round((Date.now() - new Date(session.startedAt).getTime()) / 60000);
-  return { dayName: day.name, sets, minutes, text: lines.join('\n') };
+  return { dayName: `Day ${session.day} · ${day.name}`, color: day.color, minutes, sets, volume, prs, text: lines.join('\n') };
 }
 
 export default function App() {
@@ -74,7 +80,7 @@ export default function App() {
     for (const le of current.exercises) {
       if (le.sets.length > 0 && !le.completed) markExerciseComplete(le.exerciseId, true);
     }
-    setFinished(summarize(current));
+    setFinished(summarize(current, store.sessions));
     finishSession();
     setViewingSession(false);
     setTab('today');
@@ -94,6 +100,14 @@ export default function App() {
   };
 
   const sheet = ask && <ConfirmSheet req={ask} onClose={() => setAsk(null)} />;
+
+  if (finished) {
+    return (
+      <div className="max-w-[480px] mx-auto min-h-screen">
+        <Finish summary={finished} sessions={store.sessions} onDone={() => setFinished(null)} />
+      </div>
+    );
+  }
 
   if (viewingSession && store.currentSession) {
     return (
@@ -119,8 +133,6 @@ export default function App() {
         <Today
           sessions={store.sessions}
           inProgress={store.currentSession}
-          finished={finished}
-          onDismissFinished={() => setFinished(null)}
           onStart={handleStart}
         />
       )}
