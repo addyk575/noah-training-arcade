@@ -17,18 +17,18 @@ export function ConfirmSheet({ req, onClose }: { req: ConfirmRequest; onClose: (
         style={{ paddingBottom: 'calc(20px + env(safe-area-inset-bottom))' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="text-[22px] font-bold">{req.title}</div>
-        <p className="text-[18px] text-dim leading-relaxed mt-1.5">{req.body}</p>
+        <div className="text-[26px] font-bold">{req.title}</div>
+        <p className="text-[21px] text-dim leading-relaxed mt-1.5">{req.body}</p>
         <button
           onClick={() => {
             onClose();
             req.onConfirm();
           }}
-          className="w-full h-14 mt-5 rounded-xl bg-bad text-white font-semibold text-[19px] active:opacity-80"
+          className="w-full h-14 mt-5 rounded-xl bg-bad text-white font-semibold text-[22px] active:opacity-80"
         >
           {req.confirmLabel}
         </button>
-        <button onClick={onClose} className="btn-secondary w-full h-14 mt-2 text-[19px]">
+        <button onClick={onClose} className="btn-secondary w-full h-14 mt-2 text-[22px]">
           Keep current workout
         </button>
       </div>

@@ -90,16 +90,16 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
     <div className="sticky top-0 z-10 bg-bg/95 backdrop-blur border-b border-line">
       <div className="flex items-center justify-between px-4 h-16">
         {openId ? (
-          <button onClick={() => setOpenId(null)} className="flex items-center gap-1 text-accent font-medium text-[18px] -ml-1">
+          <button onClick={() => setOpenId(null)} className="flex items-center gap-1 text-accent font-medium text-[21px] -ml-1">
             <ChevronLeft size={20} /> Exercises
           </button>
         ) : (
-          <button onClick={onBack} className="flex items-center gap-1 text-accent font-medium text-[18px] -ml-1">
+          <button onClick={onBack} className="flex items-center gap-1 text-accent font-medium text-[21px] -ml-1">
             <ChevronLeft size={20} /> Home
           </button>
         )}
-        <div className="text-[18px] font-semibold tabular-nums">{formatElapsed(current.startedAt, now)}</div>
-        <button onClick={onFinish} disabled={!anyLogged} className="btn-primary px-5 h-11 text-[18px]">
+        <div className="text-[21px] font-semibold tabular-nums">{formatElapsed(current.startedAt, now)}</div>
+        <button onClick={onFinish} disabled={!anyLogged} className="btn-primary px-5 h-11 text-[21px]">
           Finish
         </button>
       </div>
@@ -119,21 +119,21 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
         {topBar}
         <div className="px-4 pt-4">
           <Demo id={ex.id} />
-          {ex.demoNote && <p className="text-[15px] text-mute mt-2 leading-snug">{ex.demoNote}</p>}
+          {ex.demoNote && <p className="text-[18px] text-mute mt-2 leading-snug">{ex.demoNote}</p>}
 
           <div className="flex items-start justify-between gap-3 mt-4">
             <div className="min-w-0">
-              <div className="text-[15px] font-semibold text-mute">
+              <div className="text-[18px] font-semibold text-mute">
                 Exercise {idx + 1} of {day.exercises.length}
               </div>
-              <h1 className="text-[26px] font-bold leading-tight mt-0.5">{ex.name}</h1>
-              <div className="text-[18px] text-dim mt-1">{ex.target}</div>
+              <h1 className="text-[30px] font-bold leading-tight mt-0.5">{ex.name}</h1>
+              <div className="text-[21px] text-dim mt-1">{ex.target}</div>
             </div>
             <a
               href={videoUrl(ex)}
               target="_blank"
               rel="noreferrer"
-              className="shrink-0 flex items-center gap-1.5 btn-secondary px-4 h-11 text-[17px]"
+              className="shrink-0 flex items-center gap-1.5 btn-secondary px-4 h-11 text-[20px]"
             >
               <PlayIcon size={14} /> Video
             </a>
@@ -144,8 +144,8 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
               onClick={() => setOpenId(partners[0].id)}
               className="mt-3 w-full flex items-center gap-3 rounded-xl bg-accent/10 border border-accent/30 px-3 py-2.5 text-left"
             >
-              <span className="text-[14px] font-bold text-accent uppercase tracking-wide shrink-0">Superset</span>
-              <span className="text-[16px] text-ink flex-1 min-w-0">
+              <span className="text-[17px] font-bold text-accent uppercase tracking-wide shrink-0">Superset</span>
+              <span className="text-[19px] text-ink flex-1 min-w-0">
                 Alternate with <b className="font-semibold">{partners[0].name}</b>
               </span>
               <ChevronRight size={16} className="text-accent shrink-0" />
@@ -153,10 +153,10 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
           )}
 
           <div className="card mt-4 p-4">
-            <div className="text-[16px] font-semibold text-dim mb-2">Coach notes</div>
+            <div className="text-[19px] font-semibold text-dim mb-2">Coach notes</div>
             <ul className="space-y-1.5">
               {ex.cues.map((c, i) => (
-                <li key={i} className="text-[17px] leading-snug flex gap-2">
+                <li key={i} className="text-[20px] leading-snug flex gap-2">
                   <span className="text-accent">•</span>
                   <span>{c}</span>
                 </li>
@@ -179,11 +179,12 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
           style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
         >
           {next ? (
-            <button onClick={() => setOpenId(next.id)} className="btn-secondary w-full h-14 flex items-center justify-center gap-1 text-[19px]">
-              Next: {next.name} <ChevronRight size={18} />
+            <button onClick={() => setOpenId(next.id)} className="btn-secondary w-full h-16 px-4 flex items-center justify-center gap-1 text-[21px]">
+              <span className="truncate">Next: {next.name}</span>
+              <ChevronRight size={22} className="shrink-0" />
             </button>
           ) : (
-            <button onClick={() => setOpenId(null)} className="btn-secondary w-full h-14 text-[19px]">
+            <button onClick={() => setOpenId(null)} className="btn-secondary w-full h-16 text-[21px]">
               Back to all exercises
             </button>
           )}
@@ -196,12 +197,12 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
     <div className="pb-10">
       {topBar}
       <div className="px-4 pt-5">
-        <div className="text-[16px] font-semibold" style={{ color: day.color }}>
+        <div className="text-[19px] font-semibold" style={{ color: day.color }}>
           Day {day.key}
         </div>
-        <h1 className="text-[30px] font-bold leading-tight">{day.name}</h1>
-        <div className="text-[17px] text-dim mt-1">
-          {doneCount} of {day.exercises.length} exercises done · tap one to start
+        <h1 className="text-[34px] font-bold leading-tight">{day.name}</h1>
+        <div className="text-[20px] text-dim mt-1">
+          {doneCount} of {day.exercises.length} done · tap an exercise
         </div>
       </div>
 
@@ -211,8 +212,8 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
             <ExerciseRow key={group[0].id} ex={group[0]} n={day.exercises.indexOf(group[0]) + 1} logged={loggedFor(group[0].id)} allSessions={allSessions} onOpen={() => setOpenId(group[0].id)} />
           ) : (
             <div key={group[0].superset} className="rounded-2xl border border-accent/30 bg-accent/5 p-2">
-              <div className="px-2 pt-1 pb-2 text-[15px] text-accent">
-                <b className="font-bold uppercase tracking-wide">Superset</b> · one set of each, then rest
+              <div className="px-2 pt-1 pb-2 text-[18px] text-accent">
+                <b className="font-bold uppercase tracking-wide">Superset</b> · alternate, then rest
               </div>
               <div className="flex flex-col gap-2">
                 {group.map((ex) => (
@@ -224,7 +225,7 @@ export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkC
         )}
       </div>
 
-      <button onClick={onCancel} className="block mx-auto mt-8 text-[17px] text-mute underline underline-offset-4">
+      <button onClick={onCancel} className="block mx-auto mt-8 text-[20px] text-mute underline underline-offset-4">
         Discard workout
       </button>
     </div>
@@ -236,30 +237,29 @@ function ExerciseRow({ ex, n, logged, allSessions, onOpen }: { ex: Exercise; n: 
   const best = prev.length ? prev.reduce((a, b) => (a.weight * a.reps >= b.weight * b.reps ? a : b)) : null;
   const done = logged.completed;
   return (
-    <button onClick={onOpen} className="card w-full p-3 flex items-center gap-3 text-left active:bg-card2 transition-colors">
+    <button onClick={onOpen} className="card w-full p-2.5 flex items-center gap-3 text-left active:bg-card2 transition-colors">
       <div className="relative">
-        <Thumb id={ex.id} size={76} />
+        <Thumb id={ex.id} size={112} />
         {done && (
           <div className="absolute inset-0 rounded-xl bg-good/80 grid place-items-center text-white">
-            <CheckIcon size={28} />
+            <CheckIcon size={44} />
           </div>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[18px] font-semibold leading-snug">
+        <div className="text-[21px] font-semibold leading-snug">
           <span className="text-mute font-medium mr-1.5">{n}</span>
           {ex.name}
         </div>
-        <div className="text-[16px] text-dim mt-0.5">{ex.target}</div>
-        <div className="text-[15px] text-mute mt-0.5">
+        <div className="text-[19px] text-dim mt-0.5">{ex.target}</div>
+        <div className="text-[18px] text-mute mt-0.5">
           {logged.sets.length > 0
             ? `${logged.sets.length} of ${ex.sets} sets logged`
             : best
-              ? `Last time: ${formatSet(ex, best)}`
-              : 'First time'}
+              ? `Last: ${formatSet(ex, best)}`
+              : ''}
         </div>
       </div>
-      <ChevronRight size={18} className="text-mute shrink-0" />
     </button>
   );
 }
@@ -287,12 +287,12 @@ function SetTable({ ex, logged, prev, onLog, onUndo }: { ex: Exercise; logged: L
     setAmount('');
   };
 
-  const cell = 'h-14 rounded-lg text-center text-[24px] font-bold tabular-nums';
+  const cell = 'h-14 rounded-lg text-center text-[28px] font-bold tabular-nums';
   const cols = showWeight ? 'grid-cols-[30px_1fr_1fr_1fr_56px]' : 'grid-cols-[30px_1fr_1fr_56px]';
 
   return (
     <div className="card mt-4 p-3">
-      <div className={`grid ${cols} gap-2 px-1 pb-2 text-[14px] font-semibold text-mute uppercase tracking-wide`}>
+      <div className={`grid ${cols} gap-2 px-1 pb-2 text-[17px] font-semibold text-mute uppercase tracking-wide`}>
         <div className="text-center">Set</div>
         <div className="text-center">Last</div>
         {showWeight && <div className="text-center">lb</div>}
@@ -310,8 +310,8 @@ function SetTable({ ex, logged, prev, onLog, onUndo }: { ex: Exercise; logged: L
               key={i}
               className={`grid ${cols} gap-2 items-center px-1 py-1 rounded-xl ${s ? 'bg-good/10' : isNext ? 'bg-card2' : ''}`}
             >
-              <div className={`text-center text-[20px] font-bold ${s ? 'text-good' : 'text-dim'}`}>{i + 1}</div>
-              <div className="text-center text-[16px] text-mute tabular-nums">{p ? formatSet(ex, p) : '—'}</div>
+              <div className={`text-center text-[23px] font-bold ${s ? 'text-good' : 'text-dim'}`}>{i + 1}</div>
+              <div className="text-center text-[19px] text-mute tabular-nums">{p ? formatSet(ex, p) : '—'}</div>
               {showWeight &&
                 (s ? (
                   <div className={`${cell} grid place-items-center`}>{s.weight}</div>
@@ -358,10 +358,10 @@ function SetTable({ ex, logged, prev, onLog, onUndo }: { ex: Exercise; logged: L
         })}
       </div>
       <div className="flex items-center justify-between mt-3 px-1">
-        <button onClick={() => setExtra((n) => n + 1)} className="flex items-center gap-1 text-[17px] font-medium text-accent">
+        <button onClick={() => setExtra((n) => n + 1)} className="flex items-center gap-1 text-[20px] font-medium text-accent">
           <PlusIcon size={16} /> Add set
         </button>
-        <span className="text-[15px] text-mute text-right">Tap green ✓ to undo</span>
+        <span className="text-[18px] text-mute text-right">Tap green ✓ to undo</span>
       </div>
     </div>
   );
