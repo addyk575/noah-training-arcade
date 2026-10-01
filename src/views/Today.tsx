@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { WORKOUTS, DAY_ORDER, type DayKey } from '../data/workouts';
 import type { Session } from '../state/store';
 import { allowanceCount, computeStreak, nextRecommendedDay, sessionsThisWeek, todayIndexInWeek } from '../state/progress';
 import { Thumb } from '../components/ExerciseImage';
-import { CheckIcon, ChevronRight, FlameIcon, LinkIcon } from '../components/Icons';
+import { CheckIcon, FlameIcon, LinkIcon } from '../components/Icons';
 
 export type FinishedSummary = { dayName: string; sets: number; minutes: number; text: string };
 
@@ -39,8 +40,9 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
   const streak = computeStreak(sessions, now);
   const week = sessionsThisWeek(sessions, now);
   const todayIdx = todayIndexInWeek(now);
-  const nextKey = inProgress?.day ?? nextRecommendedDay(sessions);
-  const next = WORKOUTS[nextKey];
+  const recommended = nextRecommendedDay(sessions);
+  const [picked, setPicked] = useState<DayKey>(inProgress?.day ?? recommended);
+  const day = WORKOUTS[picked];
 
   return (
     <div>
@@ -76,7 +78,50 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
         </div>
       )}
 
-      <div className="card mx-4 mt-5 p-4">
+      <div className="section-title">Workout</div>
+      <div className="card mx-4 overflow-hidden">
+        <div className="grid grid-cols-3 gap-1 p-1 m-3 mb-0 rounded-xl bg-bg">
+          {DAY_ORDER.map((d) => {
+            const w = WORKOUTS[d];
+            const on = d === picked;
+            return (
+              <button
+                key={d}
+                onClick={() => setPicked(d)}
+                className={`h-14 rounded-lg flex flex-col items-center justify-center transition-colors ${on ? 'bg-card2' : ''}`}
+              >
+                <span className="text-[12px] font-bold" style={{ color: on ? w.color : undefined }}>
+                  Day {d}
+                </span>
+                <span className={`text-[13px] font-medium ${on ? 'text-ink' : 'text-mute'}`}>{w.name.split(' ')[0]}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="p-4">
+          <div className="text-[13px] font-semibold" style={{ color: day.color }}>
+            Day {day.key}
+            {picked === inProgress?.day ? ' · in progress' : picked === recommended && !inProgress ? ' · up next' : ''}
+          </div>
+          <div className="text-[22px] font-bold leading-tight">{day.name}</div>
+          <div className="text-[14px] text-dim mt-1">
+            {day.exercises.length} exercises · about {day.duration} min
+          </div>
+          <div className="flex gap-2 mt-4 overflow-x-auto -mx-4 px-4 no-scrollbar">
+            {day.exercises.map((ex) => (
+              <div key={ex.id} className="w-[76px] shrink-0">
+                <Thumb id={ex.id} size={76} />
+                <div className="text-[11px] text-dim leading-tight mt-1 line-clamp-2">{ex.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <button onClick={() => onStart(picked)} className="btn-primary w-full h-14 rounded-none text-[16px]">
+          {picked === inProgress?.day ? 'Resume workout' : `Start Day ${picked}`}
+        </button>
+      </div>
+
+      <div className="card mx-4 mt-6 p-4">
         <div className="flex items-baseline justify-between">
           <div className="text-[15px] font-semibold">Weekly goal</div>
           <div className="text-[13px] text-mute">last 7 days</div>
@@ -106,56 +151,6 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
         </div>
       </div>
 
-      <div className="section-title">{inProgress ? 'In progress' : 'Up next'}</div>
-      <div className="card mx-4 overflow-hidden">
-        <div className="p-4">
-          <div className="text-[13px] font-semibold" style={{ color: next.color }}>
-            Day {next.key}
-          </div>
-          <div className="text-[22px] font-bold leading-tight">{next.name}</div>
-          <div className="text-[14px] text-dim mt-1">
-            {next.exercises.length} exercises · about {next.duration} min
-          </div>
-          <div className="flex gap-2 mt-4 overflow-x-auto -mx-4 px-4 no-scrollbar">
-            {next.exercises.map((ex) => (
-              <div key={ex.id} className="w-[76px] shrink-0">
-                <Thumb id={ex.id} size={76} />
-                <div className="text-[11px] text-dim leading-tight mt-1 line-clamp-2">{ex.name}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <button onClick={() => onStart(nextKey)} className="btn-primary w-full h-14 rounded-none text-[16px]">
-          {inProgress ? 'Resume workout' : 'Start workout'}
-        </button>
-      </div>
-
-      <div className="section-title">All workouts</div>
-      <div className="mx-4 flex flex-col gap-2">
-        {DAY_ORDER.map((d) => {
-          const w = WORKOUTS[d];
-          const active = inProgress?.day === d;
-          return (
-            <button
-              key={d}
-              onClick={() => onStart(d)}
-              className={`card w-full p-3 flex items-center gap-3 text-left active:bg-card2 transition-colors ${active ? 'border-accent' : ''}`}
-            >
-              <Thumb id={w.exercises[1]?.id ?? w.exercises[0].id} size={52} />
-              <div className="flex-1 min-w-0">
-                <div className="text-[12px] font-semibold" style={{ color: w.color }}>
-                  Day {d}
-                </div>
-                <div className="text-[16px] font-semibold leading-tight">{w.name}</div>
-                <div className="text-[13px] text-mute mt-0.5">
-                  {active ? 'In progress' : `${w.exercises.length} exercises`}
-                </div>
-              </div>
-              <ChevronRight size={18} className="text-mute" />
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
