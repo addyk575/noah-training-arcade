@@ -114,7 +114,7 @@ export default function App() {
   }
 
   return (
-    <div className="max-w-[480px] mx-auto min-h-screen pb-[100px] relative">
+    <div className="max-w-[480px] mx-auto min-h-screen pb-[110px] relative">
       {tab === 'today' && (
         <Today
           sessions={store.sessions}

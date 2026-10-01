@@ -12,9 +12,9 @@ export function Plan() {
   return (
     <div>
       <div className="px-5 pt-8">
-        <h1 className="text-[36px] font-bold">Program</h1>
+        <h1 className="text-[40px] font-bold">Program</h1>
         <p
-          className="text-[21px] text-dim leading-relaxed mt-2 [&>b]:text-ink [&>b]:font-semibold"
+          className="text-[24px] text-dim leading-relaxed mt-2 [&>b]:text-ink [&>b]:font-semibold"
           dangerouslySetInnerHTML={html(PLAN_COPY.mission.body)}
         />
       </div>
@@ -24,7 +24,7 @@ export function Plan() {
           <button
             key={d}
             onClick={() => setDay(d)}
-            className={`h-12 rounded-lg text-[21px] font-semibold transition-colors ${day === d ? 'bg-card2 text-ink' : 'text-mute'}`}
+            className={`h-14 rounded-lg text-[24px] font-semibold transition-colors ${day === d ? 'bg-card2 text-ink' : 'text-mute'}`}
           >
             Day {d}
           </button>
@@ -32,20 +32,20 @@ export function Plan() {
       </div>
 
       <div className="card mx-4 mt-3 p-4">
-        <div className="text-[26px] font-bold">{w.name}</div>
-        <div className="text-[20px] text-dim mt-0.5">{w.focus}</div>
+        <div className="text-[30px] font-bold">{w.name}</div>
+        <div className="text-[23px] text-dim mt-0.5">{w.focus}</div>
         <div className="mt-3 flex flex-col divide-y divide-line">
           {w.exercises.map((ex, i) => (
             <div key={ex.id} className="flex items-center gap-3 py-2.5">
-              <Thumb id={ex.id} size={88} />
+              <Thumb id={ex.id} size={104} />
               <div className="flex-1 min-w-0">
-                <div className="text-[21px] font-medium leading-snug">
+                <div className="text-[24px] font-medium leading-snug">
                   <span className="text-mute mr-1.5">{i + 1}</span>
                   {ex.name}
                 </div>
-                <div className="text-[19px] text-mute">{ex.target}</div>
+                <div className="text-[22px] text-mute">{ex.target}</div>
               </div>
-              {ex.superset && <span className="text-[17px] font-bold uppercase tracking-wide text-accent bg-accent/10 rounded-full px-2 py-1">Superset</span>}
+              {ex.superset && <span className="text-[19px] font-bold uppercase tracking-wide text-accent bg-accent/10 rounded-full px-2 py-1">Superset</span>}
             </div>
           ))}
         </div>
@@ -55,13 +55,13 @@ export function Plan() {
       <div className="mx-4 flex flex-col gap-2">
         {PLAN_COPY.why.map((x) => (
           <div key={x.h} className="card p-4">
-            <div className="text-[21px] font-semibold">{x.h}</div>
-            <p className="text-[20px] text-dim leading-relaxed mt-1 [&>b]:text-ink [&>b]:font-semibold" dangerouslySetInnerHTML={html(x.p)} />
+            <div className="text-[24px] font-semibold">{x.h}</div>
+            <p className="text-[23px] text-dim leading-relaxed mt-1 [&>b]:text-ink [&>b]:font-semibold" dangerouslySetInnerHTML={html(x.p)} />
           </div>
         ))}
         <div className="card p-4">
-          <div className="text-[21px] font-semibold">Weekly goal</div>
-          <p className="text-[20px] text-dim leading-relaxed mt-1 [&>b]:text-ink [&>b]:font-semibold" dangerouslySetInnerHTML={html(PLAN_COPY.allowance.p)} />
+          <div className="text-[24px] font-semibold">Weekly goal</div>
+          <p className="text-[23px] text-dim leading-relaxed mt-1 [&>b]:text-ink [&>b]:font-semibold" dangerouslySetInnerHTML={html(PLAN_COPY.allowance.p)} />
         </div>
       </div>
 
@@ -70,11 +70,11 @@ export function Plan() {
         {PLAN_COPY.phases.map((p) => (
           <div key={p.wk} className="p-4">
             <div className="flex items-baseline justify-between">
-              <div className="text-[21px] font-semibold">{p.name}</div>
-              <div className="text-[18px] font-semibold text-mute">Weeks {p.wk}</div>
+              <div className="text-[24px] font-semibold">{p.name}</div>
+              <div className="text-[21px] font-semibold text-mute">Weeks {p.wk}</div>
             </div>
-            <div className="text-[19px] text-accent mt-0.5">{p.load}</div>
-            <div className="text-[20px] text-dim leading-relaxed mt-1">{p.focus}</div>
+            <div className="text-[22px] text-accent mt-0.5">{p.load}</div>
+            <div className="text-[23px] text-dim leading-relaxed mt-1">{p.focus}</div>
           </div>
         ))}
       </div>
@@ -83,10 +83,10 @@ export function Plan() {
       <div className="card mx-4 divide-y divide-line">
         {PLAN_COPY.rules.map((r, i) => (
           <div key={r.h} className="p-4 flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-card2 grid place-items-center text-[18px] font-bold text-dim shrink-0">{i + 1}</div>
+            <div className="w-8 h-8 rounded-full bg-card2 grid place-items-center text-[21px] font-bold text-dim shrink-0">{i + 1}</div>
             <div>
-              <div className="text-[21px] font-semibold">{r.h}</div>
-              <div className="text-[20px] text-dim leading-relaxed mt-0.5">{r.p}</div>
+              <div className="text-[24px] font-semibold">{r.h}</div>
+              <div className="text-[23px] text-dim leading-relaxed mt-0.5">{r.p}</div>
             </div>
           </div>
         ))}

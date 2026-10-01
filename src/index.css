@@ -53,7 +53,7 @@
     @apply bg-card border border-line rounded-2xl;
   }
   .section-title {
-    @apply text-[18px] font-bold text-dim uppercase tracking-wide px-5 mt-8 mb-3;
+    @apply text-[20px] font-bold text-dim uppercase tracking-wide px-5 mt-8 mb-3;
   }
   .btn-primary {
     @apply bg-accent text-white font-semibold rounded-xl active:opacity-80 transition-opacity disabled:opacity-40;

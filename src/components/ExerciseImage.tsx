@@ -13,6 +13,10 @@ export function Thumb({ id, size = 56 }: { id: string; size?: number }) {
   );
 }
 
+export function Photo({ id }: { id: string }) {
+  return <img src={demoSrc(id, 1)} alt="" loading="lazy" className="w-full aspect-[16/10] rounded-xl object-cover bg-card2" />;
+}
+
 /** Alternates the start and end photos so the movement reads like a short loop. */
 export function Demo({ id }: { id: string }) {
   const [frame, setFrame] = useState<0 | 1>(0);
@@ -35,7 +39,7 @@ export function Demo({ id }: { id: string }) {
         {(['Start', 'Finish'] as const).map((l, i) => (
           <span
             key={l}
-            className={`text-[17px] font-semibold px-2 py-0.5 rounded-full ${
+            className={`text-[19px] font-semibold px-2 py-0.5 rounded-full ${
               frame === i ? 'bg-white text-black' : 'bg-black/50 text-white/70'
             }`}
           >
