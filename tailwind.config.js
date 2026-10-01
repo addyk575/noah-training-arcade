@@ -14,6 +14,7 @@ export default {
         accent: '#4F7CFF',
         good: '#22C55E',
         warn: '#F59E0B',
+        bad: '#EF4444',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

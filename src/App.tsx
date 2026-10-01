@@ -9,6 +9,7 @@ import { Stats } from './views/Stats';
 import { Log } from './views/Log';
 import { getExercise, WORKOUTS, type DayKey } from './data/workouts';
 import type { Session } from './state/store';
+import { ConfirmSheet, type ConfirmRequest } from './components/ConfirmSheet';
 
 function summarize(session: Session): FinishedSummary {
   const day = WORKOUTS[session.day];
@@ -33,21 +34,38 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('today');
   const [viewingSession, setViewingSession] = useState(false);
   const [finished, setFinished] = useState<FinishedSummary | null>(null);
+  const [ask, setAsk] = useState<ConfirmRequest | null>(null);
+
+  const openSession = () => {
+    setFinished(null);
+    setViewingSession(true);
+    window.scrollTo(0, 0);
+  };
 
   const handleStart = (day?: DayKey) => {
     const current = store.currentSession;
     const target = day ?? current?.day ?? nextRecommendedDay(store.sessions);
-    if (current && current.day !== target) {
-      const hasSets = current.exercises.some((e) => e.sets.length > 0);
-      if (hasSets && !confirm(`Switch to Day ${target}? The sets you logged for Day ${current.day} will be deleted.`)) return;
-      cancelSession();
+    if (!current) {
       startSession(target);
-    } else if (!current) {
-      startSession(target);
+    } else if (current.day !== target) {
+      const switchDay = () => {
+        cancelSession();
+        startSession(target);
+        openSession();
+      };
+      if (current.exercises.some((e) => e.sets.length > 0)) {
+        setAsk({
+          title: `Switch to Day ${target}?`,
+          body: `You have sets logged for Day ${current.day}. Switching deletes them.`,
+          confirmLabel: `Delete and start Day ${target}`,
+          onConfirm: switchDay,
+        });
+        return;
+      }
+      switchDay();
+      return;
     }
-    setFinished(null);
-    setViewingSession(true);
-    window.scrollTo(0, 0);
+    openSession();
   };
 
   const handleFinish = () => {
@@ -64,11 +82,18 @@ export default function App() {
   };
 
   const handleCancel = () => {
-    if (confirm('Discard this workout? Logged sets will be deleted.')) {
-      cancelSession();
-      setViewingSession(false);
-    }
+    setAsk({
+      title: 'Discard this workout?',
+      body: 'Any sets you logged in this workout will be deleted.',
+      confirmLabel: 'Discard workout',
+      onConfirm: () => {
+        cancelSession();
+        setViewingSession(false);
+      },
+    });
   };
+
+  const sheet = ask && <ConfirmSheet req={ask} onClose={() => setAsk(null)} />;
 
   if (viewingSession && store.currentSession) {
     return (
@@ -83,6 +108,7 @@ export default function App() {
           onBack={() => setViewingSession(false)}
           onCancel={handleCancel}
         />
+        {sheet}
       </div>
     );
   }
@@ -109,6 +135,7 @@ export default function App() {
           window.scrollTo(0, 0);
         }}
       />
+      {sheet}
     </div>
   );
 }
