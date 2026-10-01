@@ -25,10 +25,10 @@ export function Header({ rank, totalXp, streak }: Props) {
             fontSize: 16,
           }}
         >
-          N
+          A
         </div>
         <div>
-          <div className="display text-[14px] text-ink leading-none">NOAH</div>
+          <div className="display text-[14px] text-ink leading-none">ADDY</div>
           <div className="mono text-[10px] text-dim tracking-[0.08em] leading-none mt-[3px]">
             LVL {rankText} · {totalXp.toLocaleString()} XP
           </div>

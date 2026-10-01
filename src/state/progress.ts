@@ -1,5 +1,5 @@
 import type { Session } from './store';
-import { WORKOUTS, type DayKey, type Exercise, getExercise } from '../data/workouts';
+import { WORKOUTS, DAY_ORDER, type DayKey, type Exercise, getExercise } from '../data/workouts';
 
 const XP_PER_RANK = 500;
 
@@ -39,13 +39,13 @@ export function sessionXp(session: Session): number {
   if (completedCount >= 3) xp += 25;
   if (session.finishedAt) {
     const day = WORKOUTS[session.day];
-    if (completedCount >= day.exercises.length) xp += 50;
+    if (day && completedCount >= day.exercises.length) xp += 50;
   }
   return xp;
 }
 
 export function allowanceCount(sessions: Session[], now = new Date()): number {
-  const windowStart = new Date(now.getTime() - 8 * 86400000);
+  const windowStart = new Date(now.getTime() - 7 * 86400000);
   return sessions.filter((s) => {
     if (!s.finishedAt) return false;
     const exCompleted = s.exercises.filter((e) => e.completed).length;
@@ -99,8 +99,7 @@ export function todayIndexInWeek(now = new Date()): number {
 export function nextRecommendedDay(sessions: Session[]): DayKey {
   const last = [...sessions].reverse().find((s) => s.finishedAt);
   if (!last) return 'A';
-  const order: DayKey[] = ['A', 'B', 'C', 'D'];
-  return order[(order.indexOf(last.day) + 1) % order.length];
+  return DAY_ORDER[(DAY_ORDER.indexOf(last.day) + 1) % DAY_ORDER.length];
 }
 
 export function lastPerformance(sessions: Session[], exerciseId: string): { weight: number; reps: number; when: string } | null {

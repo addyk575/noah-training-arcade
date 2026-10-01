@@ -21,14 +21,12 @@ const DAY_COLOR: Record<DayKey, string> = {
   A: '#4DD4FF',
   B: '#10F8A0',
   C: '#FF9A3C',
-  D: '#A855F7',
 };
 
 const DAY_ACCENT: Record<DayKey, ArcadeColor> = {
   A: 'mana',
   B: 'win',
   C: 'hp',
-  D: 'legendary',
 };
 
 function formatElapsed(startedAt: string, now: number): string {
@@ -383,7 +381,7 @@ function ExerciseRow({
 }
 
 function buildSummary(session: Session, exercises: Exercise[]): string {
-  const lines: string[] = [`Noah · Day ${session.day} session done.`];
+  const lines: string[] = [`Addy · Day ${session.day} session done.`];
   for (const le of session.exercises) {
     if (!le.completed && le.sets.length === 0) continue;
     const ex = exercises.find((e) => e.id === le.exerciseId);

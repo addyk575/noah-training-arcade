@@ -1,4 +1,4 @@
-import { WORKOUTS, type DayKey } from '../data/workouts';
+import { WORKOUTS, DAY_ORDER, type DayKey } from '../data/workouts';
 import type { Session } from '../state/store';
 import {
   allowanceCount,
@@ -21,14 +21,13 @@ const DAY_COLOR: Record<DayKey, string> = {
   A: '#4DD4FF',
   B: '#10F8A0',
   C: '#FF9A3C',
-  D: '#A855F7',
 };
 
 export function Today({ sessions, onStart }: Props) {
   const now = new Date();
   const rank = rankInfo(sessions);
   const count = allowanceCount(sessions, now);
-  const goal = 4;
+  const goal = 3;
   const unlocked = count >= goal;
   const nextDay = nextRecommendedDay(sessions);
   const day = WORKOUTS[nextDay];
@@ -51,7 +50,7 @@ export function Today({ sessions, onStart }: Props) {
 
       <div className="flex items-baseline justify-between px-[18px] mt-[20px] mb-[10px]">
         <span className="eyebrow">ACTIVE QUEST</span>
-        <span className="meta">8-DAY WINDOW</span>
+        <span className="meta">7-DAY WINDOW</span>
       </div>
 
       <div className="mx-[16px]">
@@ -69,13 +68,13 @@ export function Today({ sessions, onStart }: Props) {
             +500 XP
           </div>
           <div className="meta text-[10px] tracking-[0.1em] uppercase">
-            QUEST · EARN SCREEN TIME
+            QUEST · HIT THE WEEK
           </div>
           <div className="flex items-baseline mt-[2px]">
             <span className="display text-[56px] leading-none text-ink">{count}</span>
             <span className="display text-[28px] leading-none text-mute ml-[6px]">/ {goal}</span>
           </div>
-          <div className="text-[13px] text-dim mt-[4px]">sessions in the last 8 days</div>
+          <div className="text-[13px] text-dim mt-[4px]">sessions in the last 7 days</div>
 
           <div className="flex gap-[6px] mt-[14px]">
             {Array.from({ length: goal }).map((_, i) => (
@@ -92,11 +91,11 @@ export function Today({ sessions, onStart }: Props) {
 
           <div className="mt-[14px] text-[14px]">
             {unlocked ? (
-              <span className="text-win font-bold">🔓 Phone unlocked for the week</span>
+              <span className="text-win font-bold">✅ Week complete</span>
             ) : (
               <>
                 <span className="text-dim">{remaining} more</span>{' '}
-                <span className="text-xp font-bold">→ phone unlocks</span>
+                <span className="text-xp font-bold">→ week complete</span>
               </>
             )}
           </div>
@@ -184,8 +183,8 @@ export function Today({ sessions, onStart }: Props) {
         <span className="meta">OVERRIDE</span>
       </div>
 
-      <div className="mx-[16px] grid grid-cols-4 gap-[8px]">
-        {(['A', 'B', 'C', 'D'] as DayKey[]).map((d) => {
+      <div className="mx-[16px] grid grid-cols-3 gap-[8px]">
+        {DAY_ORDER.map((d) => {
           const isNext = d === nextDay;
           return (
             <button
@@ -208,6 +207,6 @@ export function Today({ sessions, onStart }: Props) {
   );
 }
 
-function getAccent(d: DayKey): 'mana' | 'win' | 'hp' | 'legendary' {
-  return d === 'A' ? 'mana' : d === 'B' ? 'win' : d === 'C' ? 'hp' : 'legendary';
+function getAccent(d: DayKey): 'mana' | 'win' | 'hp' {
+  return d === 'A' ? 'mana' : d === 'B' ? 'win' : 'hp';
 }

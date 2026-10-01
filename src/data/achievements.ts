@@ -1,4 +1,5 @@
 import type { Session } from '../state/store';
+import { DAY_ORDER } from './workouts';
 
 export type Achievement = {
   id: string;
@@ -49,7 +50,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     check: (s) => s.reduce((n, x) => n + (x.pr?.length ?? 0), 0) >= 5 },
   { id: '100_sets',       name: '100 Sets',         description: 'Log 100 total sets',           icon: '💯',
     check: (s) => totalSets(s) >= 100 },
-  { id: 'week_perfect',   name: 'Week Perfect',     description: 'All 4 sessions in one week',   icon: '✨',
+  { id: 'week_perfect',   name: 'Week Perfect',     description: 'All 3 sessions in one week',   icon: '✨',
     check: (s) => {
       const by: Record<string, number> = {};
       for (const sess of s) {
@@ -60,13 +61,13 @@ export const ACHIEVEMENTS: Achievement[] = [
         const key = `${year}-${week}`;
         by[key] = (by[key] ?? 0) + 1;
       }
-      return Object.values(by).some((n) => n >= 4);
+      return Object.values(by).some((n) => n >= DAY_ORDER.length);
     } },
-  { id: 'all_days',       name: 'Full Rotation',    description: 'Complete all 4 day types',     icon: '🔄',
-    check: (s) => new Set(s.filter((x) => x.finishedAt).map((x) => x.day)).size === 4 },
-  { id: 'bench_two_plate',name: 'Bench 2 Plates',   description: 'Bench press 135 lb',           icon: '💪',
+  { id: 'all_days',       name: 'Full Rotation',    description: 'Complete all 3 day types',     icon: '🔄',
+    check: (s) => new Set(s.filter((x) => x.finishedAt).map((x) => x.day)).size === DAY_ORDER.length },
+  { id: 'bench_two_plate',name: 'Bench 2 Plates',   description: 'Barbell chest press 135 lb',           icon: '💪',
     check: (s) => s.some((x) => x.exercises.some((e) => e.exerciseId === 'bench' && e.sets.some((st) => st.weight >= 135))) },
-  { id: 'pullup_10',      name: '10 Strict Pulls',  description: '10 unbroken pull-ups',         icon: '🆙',
+  { id: 'pullup_10',      name: '10 Strict Chins',  description: '10 unbroken underhand pull-ups',         icon: '🆙',
     check: (s) => s.some((x) => x.exercises.some((e) => e.exerciseId === 'pullup' && e.sets.some((st) => st.reps >= 10))) },
   { id: 'xp_1000',        name: 'Rank 03',          description: 'Earn 1,000 total XP',          icon: '⭐',
     check: (s) => s.reduce((n, x) => n + (x.xp ?? 0), 0) >= 1000 },

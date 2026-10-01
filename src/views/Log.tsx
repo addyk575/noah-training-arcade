@@ -7,7 +7,6 @@ const DAY_COLOR: Record<DayKey, string> = {
   A: '#4DD4FF',
   B: '#10F8A0',
   C: '#FF9A3C',
-  D: '#A855F7',
 };
 
 export function Log({ sessions }: Props) {

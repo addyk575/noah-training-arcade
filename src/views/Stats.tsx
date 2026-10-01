@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Session } from '../state/store';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { rankInfo, totalXp } from '../state/progress';
-import { getExercise, WORKOUTS } from '../data/workouts';
+import { getExercise, WORKOUTS, DAY_ORDER } from '../data/workouts';
 import { PixelCard } from '../components/PixelCard';
 import { Card } from '../components/Card';
 
@@ -216,8 +216,7 @@ export function Stats({ sessions }: Props) {
 }
 
 function getDayForExercise(id: string): string {
-  const days = ['A', 'B', 'C', 'D'] as const;
-  for (const d of days) {
+  for (const d of DAY_ORDER) {
     if (WORKOUTS[d].exercises.find((e) => e.id === id)) return d;
   }
   return '–';

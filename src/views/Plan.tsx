@@ -114,7 +114,7 @@ export function Plan() {
       </div>
 
       <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
-        <span className="eyebrow">ALLOWANCE</span>
+        <span className="eyebrow">WEEKLY QUEST</span>
         <span className="meta">THE DEAL</span>
       </div>
 
@@ -122,7 +122,7 @@ export function Plan() {
         <Card accent="xp" leftStripe>
           <div className="p-[16px] pl-[22px]">
             <div className="flex items-center gap-[8px]">
-              <span className="text-[22px]">🔓</span>
+              <span className="text-[22px]">✅</span>
               <div className="display text-[14px] text-xp">{PLAN_COPY.allowance.h}</div>
             </div>
             <p

@@ -32,7 +32,7 @@ export type WorkoutStore = {
   settings: Settings;
 };
 
-const KEY = 'noah_workouts_v1';
+const KEY = 'addy_workouts_v1';
 
 const DEFAULT_STORE: WorkoutStore = {
   sessions: [],
