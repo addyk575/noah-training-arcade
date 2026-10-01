@@ -134,13 +134,12 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
       <div className="mx-4 flex flex-col gap-2">
         {DAY_ORDER.map((d) => {
           const w = WORKOUTS[d];
-          const disabled = !!inProgress && inProgress.day !== d;
+          const active = inProgress?.day === d;
           return (
             <button
               key={d}
               onClick={() => onStart(d)}
-              disabled={disabled}
-              className="card w-full p-3 flex items-center gap-3 text-left active:bg-card2 transition-colors disabled:opacity-40"
+              className={`card w-full p-3 flex items-center gap-3 text-left active:bg-card2 transition-colors ${active ? 'border-accent' : ''}`}
             >
               <Thumb id={w.exercises[1]?.id ?? w.exercises[0].id} size={52} />
               <div className="flex-1 min-w-0">
@@ -148,16 +147,15 @@ export function Today({ sessions, inProgress, finished, onDismissFinished, onSta
                   Day {d}
                 </div>
                 <div className="text-[16px] font-semibold leading-tight">{w.name}</div>
-                <div className="text-[13px] text-mute mt-0.5">{w.exercises.length} exercises</div>
+                <div className="text-[13px] text-mute mt-0.5">
+                  {active ? 'In progress' : `${w.exercises.length} exercises`}
+                </div>
               </div>
               <ChevronRight size={18} className="text-mute" />
             </button>
           );
         })}
       </div>
-      {inProgress && (
-        <p className="text-[12px] text-mute text-center mt-3 px-6">Finish or discard the workout in progress to start a different day.</p>
-      )}
     </div>
   );
 }

@@ -35,8 +35,16 @@ export default function App() {
   const [finished, setFinished] = useState<FinishedSummary | null>(null);
 
   const handleStart = (day?: DayKey) => {
-    const target = day ?? nextRecommendedDay(store.sessions);
-    if (!store.currentSession) startSession(target);
+    const current = store.currentSession;
+    const target = day ?? current?.day ?? nextRecommendedDay(store.sessions);
+    if (current && current.day !== target) {
+      const hasSets = current.exercises.some((e) => e.sets.length > 0);
+      if (hasSets && !confirm(`Switch to Day ${target}? The sets you logged for Day ${current.day} will be deleted.`)) return;
+      cancelSession();
+      startSession(target);
+    } else if (!current) {
+      startSession(target);
+    }
     setFinished(null);
     setViewingSession(true);
     window.scrollTo(0, 0);
