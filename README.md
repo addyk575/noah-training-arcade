@@ -1,6 +1,8 @@
-# Noah Training — Arcade × Coach
+# Addy Training
 
-Mobile-first workout tracker for Noah (age 14). XP, ranks, quests, 4-day A/B/C/D rotation, allowance-rule logic, and the "4 sessions in 8 days unlocks the phone" quest.
+Mobile-first gym tracker for Addy's 3-day split (chest + triceps, back + biceps, shoulders). Exercise demo photos, superset grouping, per-set logging prefilled from last time, a 3-workouts-per-week goal, personal bests and history.
+
+Exercise photos in `public/exercises/` come from [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (public domain).
 
 Built as React + Vite + TypeScript + Tailwind, deploying to GitHub Pages.
 
@@ -43,15 +45,15 @@ npm run deploy         # builds and pushes dist/ to the gh-pages branch
 
 ## Storage
 
-localStorage key `noah_workouts_v1`. Safe to import data from the old single-HTML app — the schema is compatible, XP/PR fields get defaulted on load.
+localStorage key `addy_workouts_v1`.
 
 ## Project layout
 
 ```
 src/
-  data/          WORKOUTS (A/B/C/D), PLAN_COPY, ACHIEVEMENTS
-  state/         localStorage store, useStore hook, XP/rank/streak/allowance logic
-  components/    Header, XpBar, BottomNav, Eyebrow, Icons
+  data/          WORKOUTS (A/B/C), PLAN_COPY, ACHIEVEMENTS
+  state/         localStorage store, useStore hook, streak/weekly-goal logic
+  components/    BottomNav, ExerciseImage (thumb + demo), Icons
   views/         Today, LiveSession, Plan, Stats, Log
   App.tsx        tab router + session view toggle
 ```

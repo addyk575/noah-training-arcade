@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-import { WORKOUTS, type DayKey, type Exercise } from '../data/workouts';
-import type { Session } from '../state/store';
-import { lastPerformance, suggestedNextWeight } from '../state/progress';
-import { PixelCard, type ArcadeColor } from '../components/PixelCard';
-import { XpBar } from '../components/XpBar';
+import { useEffect, useState } from 'react';
+import { WORKOUTS, videoUrl, type Exercise } from '../data/workouts';
+import type { LoggedExercise, LoggedSet, Session } from '../state/store';
+import { lastSets } from '../state/progress';
+import { Demo, Thumb } from '../components/ExerciseImage';
+import { CheckIcon, ChevronLeft, ChevronRight, PlayIcon, PlusIcon } from '../components/Icons';
 
 type Props = {
   current: Session;
@@ -14,380 +14,355 @@ type Props = {
   onFinish: () => void;
   onBack: () => void;
   onCancel: () => void;
-  coachContact: string;
-};
-
-const DAY_COLOR: Record<DayKey, string> = {
-  A: '#4DD4FF',
-  B: '#10F8A0',
-  C: '#FF9A3C',
-};
-
-const DAY_ACCENT: Record<DayKey, ArcadeColor> = {
-  A: 'mana',
-  B: 'win',
-  C: 'hp',
 };
 
 function formatElapsed(startedAt: string, now: number): string {
-  const ms = now - new Date(startedAt).getTime();
-  const sec = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(sec / 60);
+  const sec = Math.max(0, Math.floor((now - new Date(startedAt).getTime()) / 1000));
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
   const s = sec % 60;
-  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  const mm = m.toString().padStart(2, '0');
+  const ss = s.toString().padStart(2, '0');
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
-export function LiveSession({
-  current,
-  allSessions,
-  onLogSet,
-  onUndoSet,
-  onMarkComplete,
-  onFinish,
-  onBack,
-  onCancel,
-  coachContact,
-}: Props) {
+function groupExercises(exercises: Exercise[]): Exercise[][] {
+  const groups: Exercise[][] = [];
+  for (const ex of exercises) {
+    const prev = groups[groups.length - 1];
+    if (ex.superset && prev && prev[0].superset === ex.superset) prev.push(ex);
+    else groups.push([ex]);
+  }
+  return groups;
+}
+
+function defaultAmount(ex: Exercise): number | null {
+  if (ex.unit === 'sec') {
+    const min = ex.target.match(/(\d+)\s*min/);
+    if (min) return Number(min[1]) * 60;
+    const s = ex.target.match(/(\d+)\s*s/);
+    return s ? Number(s[1]) : null;
+  }
+  const after = ex.target.includes('×') ? ex.target.split('×')[1] : ex.target;
+  const n = after.match(/\d+/);
+  return n ? Number(n[0]) : null;
+}
+
+function formatSet(ex: Exercise, s: LoggedSet): string {
+  if (ex.unit === 'sec') return `${s.reps}s`;
+  if (ex.unit === 'lb') return `${s.weight} × ${s.reps}`;
+  return `${s.reps}`;
+}
+
+export function LiveSession({ current, allSessions, onLogSet, onUndoSet, onMarkComplete, onFinish, onBack, onCancel }: Props) {
   const day = WORKOUTS[current.day];
   const [now, setNow] = useState(() => Date.now());
-  const [activeId, setActiveId] = useState<string | null>(day.exercises[0]?.id ?? null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const completedCount = current.exercises.filter((e) => e.completed).length;
-  const totalXpEarned = useMemo(() => {
-    let x = 0;
-    for (const le of current.exercises) {
-      if (!le.completed) continue;
-      const ex = day.exercises.find((e) => e.id === le.exerciseId);
-      if (ex) x += ex.xp;
-    }
-    return x;
-  }, [current.exercises, day.exercises]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [openId]);
 
-  const handleFinish = () => {
-    const summary = buildSummary(current, day.exercises);
-    try {
-      navigator.clipboard.writeText(summary).catch(() => {});
-    } catch {}
-    const sms = `sms:${coachContact.replace(/[^0-9+]/g, '')}?&body=${encodeURIComponent(summary)}`;
-    onFinish();
-    window.setTimeout(() => {
-      window.location.href = sms;
-    }, 200);
+  const loggedFor = (id: string): LoggedExercise =>
+    current.exercises.find((e) => e.exerciseId === id) ?? { exerciseId: id, sets: [], completed: false };
+
+  const doneCount = day.exercises.filter((e) => loggedFor(e.id).completed).length;
+  const anyLogged = current.exercises.some((e) => e.sets.length > 0);
+
+  const logSet = (ex: Exercise, weight: number, reps: number) => {
+    const count = loggedFor(ex.id).sets.length + 1;
+    onLogSet(ex.id, weight, reps);
+    if (count >= ex.sets) onMarkComplete(ex.id, true);
   };
 
-  return (
-    <div className="pb-[80px]">
-      <div className="px-[16px] py-[12px] flex justify-between items-center">
-        <button onClick={onBack} className="display text-[11px] tracking-[0.1em] text-dim flex items-center gap-[4px]">
-          ‹ BACK
-        </button>
-        <div
-          className="mono text-[13px] font-bold text-ink px-[10px] py-[6px] rounded-xs"
-          style={{ background: '#151A2E', border: '1px solid #2D3560' }}
-        >
-          ⏱ {formatElapsed(current.startedAt, now)}
-        </div>
-      </div>
+  const undoSet = (ex: Exercise) => {
+    const le = loggedFor(ex.id);
+    onUndoSet(ex.id);
+    if (le.completed && le.sets.length - 1 < ex.sets) onMarkComplete(ex.id, false);
+  };
 
-      <div className="mx-[16px] mb-[16px]">
-        <PixelCard accent={DAY_ACCENT[current.day]}>
-          <div className="flex items-baseline justify-between">
-            <span className="mono text-[10px] text-mute tracking-[0.08em]">
-              DAY {current.day} · {day.name.toUpperCase()}
-            </span>
-            <span className="mono text-[10px] text-xp tracking-[0.08em]">+{totalXpEarned} XP</span>
-          </div>
-          <div className="display text-[24px] text-ink mt-[2px]">{day.name}</div>
-          <div className="mt-[10px]">
-            <XpBar
-              value={completedCount}
-              max={day.exercises.length}
-              color={DAY_COLOR[current.day]}
-              segments={day.exercises.length * 3}
-            />
-          </div>
-          <div className="mono text-[11px] text-dim tracking-[0.06em] mt-[8px]">
-            {completedCount} OF {day.exercises.length} LIFTS CLEARED
-          </div>
-        </PixelCard>
-      </div>
-
-      <div className="px-[16px] flex flex-col gap-[10px]">
-        {day.exercises.map((ex, i) => {
-          const logged = current.exercises.find((e) => e.exerciseId === ex.id);
-          const isDone = logged?.completed ?? false;
-          const isActive = activeId === ex.id && !isDone;
-          return (
-            <ExerciseRow
-              key={ex.id}
-              ex={ex}
-              index={i + 1}
-              logged={logged}
-              isActive={isActive}
-              isDone={isDone}
-              allSessions={allSessions}
-              onActivate={() => setActiveId(ex.id)}
-              onLog={(w, r) => onLogSet(ex.id, w, r)}
-              onUndo={() => onUndoSet(ex.id)}
-              onToggleDone={(done) => {
-                onMarkComplete(ex.id, done);
-                if (done) {
-                  const nextEx = day.exercises.find(
-                    (e, idx) =>
-                      idx > i && !current.exercises.find((le) => le.exerciseId === e.id)?.completed,
-                  );
-                  if (nextEx) setActiveId(nextEx.id);
-                }
-              }}
-            />
-          );
-        })}
-      </div>
-
-      <div className="mx-[16px] mt-[14px] flex gap-[8px]">
-        <button
-          onClick={onCancel}
-          className="flex-1 py-[14px] rounded-lg text-[13px] font-bold text-mute"
-          style={{ background: '#151A2E', border: '1px solid #2D3560' }}
-        >
-          Cancel
+  const topBar = (
+    <div className="sticky top-0 z-10 bg-bg/95 backdrop-blur border-b border-line">
+      <div className="flex items-center justify-between px-4 h-14">
+        {openId ? (
+          <button onClick={() => setOpenId(null)} className="flex items-center gap-1 text-accent font-medium text-[15px] -ml-1">
+            <ChevronLeft size={20} /> Exercises
+          </button>
+        ) : (
+          <button onClick={onBack} className="flex items-center gap-1 text-accent font-medium text-[15px] -ml-1">
+            <ChevronLeft size={20} /> Home
+          </button>
+        )}
+        <div className="text-[15px] font-semibold tabular-nums">{formatElapsed(current.startedAt, now)}</div>
+        <button onClick={onFinish} disabled={!anyLogged} className="btn-primary px-4 h-9 text-[14px]">
+          Finish
         </button>
-        <button
-          onClick={handleFinish}
-          disabled={completedCount === 0}
-          className="flex-[2] py-[14px] rounded-lg display text-[13px] tracking-[0.1em] transition-transform active:scale-[0.97]"
-          style={
-            completedCount === 0
-              ? { background: '#1E2545', color: '#6B6B95' }
-              : {
-                  background: 'linear-gradient(90deg, #FFD93D, #FF4785)',
-                  color: '#000',
-                  boxShadow: '0 0 18px rgba(255,217,61,0.5)',
-                }
-          }
-        >
-          FINISH · +{totalXpEarned} XP
-        </button>
+      </div>
+      <div className="h-[3px] bg-card2">
+        <div className="h-full bg-good transition-all" style={{ width: `${(doneCount / day.exercises.length) * 100}%` }} />
       </div>
     </div>
   );
-}
 
-type CardProps = {
-  ex: Exercise;
-  index: number;
-  logged: Session['exercises'][number] | undefined;
-  isActive: boolean;
-  isDone: boolean;
-  allSessions: Session[];
-  onActivate: () => void;
-  onLog: (weight: number, reps: number) => void;
-  onUndo: () => void;
-  onToggleDone: (done: boolean) => void;
-};
+  if (openId) {
+    const idx = day.exercises.findIndex((e) => e.id === openId);
+    const ex = day.exercises[idx];
+    const partners = ex.superset ? day.exercises.filter((e) => e.superset === ex.superset && e.id !== ex.id) : [];
+    const next = day.exercises[idx + 1];
+    return (
+      <div className="pb-[110px]">
+        {topBar}
+        <div className="px-4 pt-4">
+          <Demo id={ex.id} />
+          {ex.demoNote && <p className="text-[12px] text-mute mt-2 leading-snug">{ex.demoNote}</p>}
 
-function ExerciseRow({
-  ex,
-  index,
-  logged,
-  isActive,
-  isDone,
-  allSessions,
-  onActivate,
-  onLog,
-  onUndo,
-  onToggleDone,
-}: CardProps) {
-  const last = lastPerformance(allSessions, ex.id);
-  const defaultWeight = suggestedNextWeight(allSessions, ex.id) ?? 0;
-  const [weight, setWeight] = useState<string>(defaultWeight ? String(defaultWeight) : '');
-  const [reps, setReps] = useState<string>('');
-  const setsCount = logged?.sets.length ?? 0;
-
-  const log = () => {
-    const w = ex.unit === 'lb' ? Number(weight) || 0 : 0;
-    const r = Number(reps) || 0;
-    if (r <= 0 && w <= 0) return;
-    onLog(w, r);
-    setReps('');
-  };
-
-  const showsWeight = ex.unit === 'lb';
-  const repsPlaceholder = ex.unit === 'sec' ? 'sec' : 'reps';
-
-  const borderColor = isDone
-    ? 'rgba(16,248,160,0.4)'
-    : isActive
-    ? '#FFD93D'
-    : '#2D3560';
-  const shadow = isActive ? '0 0 0 1px rgba(255,217,61,0.3), 0 0 14px rgba(255,217,61,0.2)' : 'none';
-
-  return (
-    <div
-      className="rounded-xl p-[14px] transition-colors"
-      style={{
-        background: '#151A2E',
-        border: `1px solid ${borderColor}`,
-        boxShadow: shadow,
-      }}
-      onClick={() => !isDone && !isActive && onActivate()}
-    >
-      <div className="flex items-center gap-[12px]">
-        <div
-          className="display text-[11px] w-[16px]"
-          style={{ color: isDone ? '#10F8A0' : isActive ? '#FFD93D' : '#6B6B95' }}
-        >
-          {isDone ? '✓' : index}
-        </div>
-        <div
-          className="w-[54px] h-[44px] rounded-md grid place-items-center display text-[16px]"
-          style={{
-            background: '#000',
-            border: '1px solid #2D3560',
-            color: isDone ? '#10F8A0' : isActive ? '#FFD93D' : '#9B9BC7',
-          }}
-        >
-          {ex.name.charAt(0)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className={`text-[15px] font-bold truncate ${isDone ? 'text-win' : 'text-ink'}`}>
-            {ex.name}
-          </div>
-          <div className="mono text-[11px] text-mute mt-[2px]">
-            {last ? `LAST: ${last.weight ? `${last.weight} × ${last.reps}` : last.reps}` : 'NO HISTORY'}
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="display text-[13px] text-dim">{ex.target}</div>
-          <div className={`mono text-[10px] mt-[2px] ${isDone ? 'text-xp' : 'text-mute'}`}>
-            +{ex.xp}
-          </div>
-        </div>
-      </div>
-
-      {isActive && (
-        <div className="mt-[14px] pt-[14px] border-t border-line" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-end gap-[8px]">
-            {showsWeight && (
-              <div className="flex-1">
-                <label className="eyebrow text-[10px] block">WEIGHT</label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  placeholder="0"
-                  className="block w-full mono text-[16px] text-ink mt-[4px] px-[12px] py-[10px] rounded-md"
-                  style={{ background: '#0A0B1A', border: '1px solid #2D3560' }}
-                />
+          <div className="flex items-start justify-between gap-3 mt-4">
+            <div className="min-w-0">
+              <div className="text-[12px] font-semibold text-mute">
+                Exercise {idx + 1} of {day.exercises.length}
               </div>
-            )}
-            <div className="flex-1">
-              <label className="eyebrow text-[10px] block">
-                {ex.unit === 'sec' ? 'TIME (s)' : 'REPS'}
-              </label>
-              <input
-                type="number"
-                inputMode="numeric"
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
-                placeholder={repsPlaceholder}
-                className="block w-full mono text-[16px] text-ink mt-[4px] px-[12px] py-[10px] rounded-md"
-                style={{ background: '#0A0B1A', border: '1px solid #2D3560' }}
-              />
+              <h1 className="text-[22px] font-bold leading-tight mt-0.5">{ex.name}</h1>
+              <div className="text-[15px] text-dim mt-1">{ex.target}</div>
             </div>
-            <button
-              onClick={log}
-              className="self-end display text-[11px] tracking-[0.1em] text-black rounded-md px-[16px] py-[11px] active:scale-[0.97] transition-transform"
-              style={{ background: '#FFD93D', boxShadow: '0 0 10px rgba(255,217,61,0.4)' }}
+            <a
+              href={videoUrl(ex)}
+              target="_blank"
+              rel="noreferrer"
+              className="shrink-0 flex items-center gap-1.5 btn-secondary px-3 h-9 text-[13px]"
             >
-              LOG
-            </button>
+              <PlayIcon size={14} /> Video
+            </a>
           </div>
 
-          {setsCount > 0 && (
-            <div className="mt-[12px] flex flex-wrap gap-[6px] items-center">
-              {logged!.sets.map((s, i) => (
-                <div
-                  key={i}
-                  className="mono text-[12px] text-xp font-bold px-[8px] py-[4px] rounded-md"
-                  style={{ background: '#0A0B1A', border: '1px solid #FFD93D' }}
-                >
-                  {s.weight ? `${s.weight} × ${s.reps}` : s.reps}
-                </div>
-              ))}
-              <button onClick={onUndo} className="text-[12px] text-mute underline">
-                undo
-              </button>
-            </div>
+          {partners.length > 0 && (
+            <button
+              onClick={() => setOpenId(partners[0].id)}
+              className="mt-3 w-full flex items-center gap-3 rounded-xl bg-accent/10 border border-accent/30 px-3 py-2.5 text-left"
+            >
+              <span className="text-[11px] font-bold text-accent uppercase tracking-wide shrink-0">Superset</span>
+              <span className="text-[13px] text-ink flex-1 min-w-0">
+                Alternate with <b className="font-semibold">{partners[0].name}</b>
+              </span>
+              <ChevronRight size={16} className="text-accent shrink-0" />
+            </button>
           )}
 
-          <div className="flex gap-[8px] mt-[14px] items-center">
-            <div className="flex-1 text-[12px] text-dim">
-              <span className="text-ink font-bold">{setsCount}</span> of {ex.sets} sets
-            </div>
-            <button
-              onClick={() => onToggleDone(true)}
-              disabled={setsCount === 0}
-              className="display text-[11px] tracking-[0.1em] rounded-md px-[14px] py-[10px]"
-              style={
-                setsCount === 0
-                  ? { background: '#1E2545', color: '#6B6B95' }
-                  : { background: '#10F8A0', color: '#000', boxShadow: '0 0 10px rgba(16,248,160,0.4)' }
-              }
-            >
-              ✓ DONE
-            </button>
-          </div>
-
-          {ex.cues.length > 0 && (
-            <ul className="mt-[12px] space-y-[4px]">
+          <div className="card mt-4 p-4">
+            <div className="text-[13px] font-semibold text-dim mb-2">Coach notes</div>
+            <ul className="space-y-1.5">
               {ex.cues.map((c, i) => (
-                <li key={i} className="text-[12px] text-dim leading-[1.4] flex gap-[8px]">
-                  <span className="text-xp">•</span>
+                <li key={i} className="text-[14px] leading-snug flex gap-2">
+                  <span className="text-accent">•</span>
                   <span>{c}</span>
                 </li>
               ))}
             </ul>
+          </div>
+
+          <SetTable
+            key={ex.id}
+            ex={ex}
+            logged={loggedFor(ex.id)}
+            prev={lastSets(allSessions, ex.id)}
+            onLog={(w, r) => logSet(ex, w, r)}
+            onUndo={() => undoSet(ex)}
+          />
+        </div>
+
+        <div
+          className="fixed bottom-0 inset-x-0 mx-auto max-w-[480px] px-4 pt-3 bg-bg/95 backdrop-blur border-t border-line"
+          style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
+        >
+          {next ? (
+            <button onClick={() => setOpenId(next.id)} className="btn-secondary w-full h-12 flex items-center justify-center gap-1 text-[15px]">
+              Next: {next.name} <ChevronRight size={18} />
+            </button>
+          ) : (
+            <button onClick={() => setOpenId(null)} className="btn-secondary w-full h-12 text-[15px]">
+              Back to all exercises
+            </button>
           )}
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {isDone && setsCount > 0 && (
-        <div className="mt-[10px] flex flex-wrap gap-[6px] items-center pl-[82px]">
-          {logged!.sets.map((s, i) => (
-            <div key={i} className="mono text-[11px] text-win">
-              {s.weight ? `${s.weight}×${s.reps}` : s.reps}
-            </div>
-          ))}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleDone(false);
-            }}
-            className="text-[11px] text-mute underline"
-          >
-            reopen
-          </button>
+  return (
+    <div className="pb-10">
+      {topBar}
+      <div className="px-4 pt-5">
+        <div className="text-[13px] font-semibold" style={{ color: day.color }}>
+          Day {day.key}
         </div>
-      )}
+        <h1 className="text-[26px] font-bold leading-tight">{day.name}</h1>
+        <div className="text-[14px] text-dim mt-1">
+          {doneCount} of {day.exercises.length} exercises done · tap one to start
+        </div>
+      </div>
+
+      <div className="px-4 mt-5 flex flex-col gap-3">
+        {groupExercises(day.exercises).map((group) =>
+          group.length === 1 ? (
+            <ExerciseRow key={group[0].id} ex={group[0]} n={day.exercises.indexOf(group[0]) + 1} logged={loggedFor(group[0].id)} allSessions={allSessions} onOpen={() => setOpenId(group[0].id)} />
+          ) : (
+            <div key={group[0].superset} className="rounded-2xl border border-accent/30 bg-accent/5 p-2">
+              <div className="px-2 pt-1 pb-2 text-[12px] text-accent">
+                <b className="font-bold uppercase tracking-wide">Superset</b> · one set of each, then rest
+              </div>
+              <div className="flex flex-col gap-2">
+                {group.map((ex) => (
+                  <ExerciseRow key={ex.id} ex={ex} n={day.exercises.indexOf(ex) + 1} logged={loggedFor(ex.id)} allSessions={allSessions} onOpen={() => setOpenId(ex.id)} />
+                ))}
+              </div>
+            </div>
+          ),
+        )}
+      </div>
+
+      <button onClick={onCancel} className="block mx-auto mt-8 text-[14px] text-mute underline underline-offset-4">
+        Discard workout
+      </button>
     </div>
   );
 }
 
-function buildSummary(session: Session, exercises: Exercise[]): string {
-  const lines: string[] = [`Addy · Day ${session.day} session done.`];
-  for (const le of session.exercises) {
-    if (!le.completed && le.sets.length === 0) continue;
-    const ex = exercises.find((e) => e.id === le.exerciseId);
-    if (!ex) continue;
-    const setStr = le.sets.map((s) => (s.weight ? `${s.weight}×${s.reps}` : `${s.reps}`)).join(', ');
-    lines.push(`${ex.name}: ${setStr || 'skipped'}`);
-  }
-  return lines.join('\n');
+function ExerciseRow({ ex, n, logged, allSessions, onOpen }: { ex: Exercise; n: number; logged: LoggedExercise; allSessions: Session[]; onOpen: () => void }) {
+  const prev = lastSets(allSessions, ex.id);
+  const best = prev.length ? prev.reduce((a, b) => (a.weight * a.reps >= b.weight * b.reps ? a : b)) : null;
+  const done = logged.completed;
+  return (
+    <button onClick={onOpen} className="card w-full p-3 flex items-center gap-3 text-left active:bg-card2 transition-colors">
+      <div className="relative">
+        <Thumb id={ex.id} size={64} />
+        {done && (
+          <div className="absolute inset-0 rounded-xl bg-good/80 grid place-items-center text-white">
+            <CheckIcon size={28} />
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[15px] font-semibold leading-snug">
+          <span className="text-mute font-medium mr-1.5">{n}</span>
+          {ex.name}
+        </div>
+        <div className="text-[13px] text-dim mt-0.5">{ex.target}</div>
+        <div className="text-[12px] text-mute mt-0.5">
+          {logged.sets.length > 0
+            ? `${logged.sets.length} of ${ex.sets} sets logged`
+            : best
+              ? `Last time: ${formatSet(ex, best)}`
+              : 'First time'}
+        </div>
+      </div>
+      <ChevronRight size={18} className="text-mute shrink-0" />
+    </button>
+  );
+}
+
+function SetTable({ ex, logged, prev, onLog, onUndo }: { ex: Exercise; logged: LoggedExercise; prev: LoggedSet[]; onLog: (w: number, r: number) => void; onUndo: () => void }) {
+  const [extra, setExtra] = useState(0);
+  const lastPrev = prev[prev.length - 1];
+  const [weight, setWeight] = useState(() => {
+    const w = logged.sets[logged.sets.length - 1]?.weight ?? lastPrev?.weight;
+    return w ? String(w) : '';
+  });
+  const [amount, setAmount] = useState('');
+
+  const done = logged.sets.length;
+  const rows = Math.max(ex.sets + extra, done);
+  const showWeight = ex.unit === 'lb';
+  const amountLabel = ex.unit === 'sec' ? 'Seconds' : 'Reps';
+  const fallback = prev[done]?.reps ?? lastPrev?.reps ?? defaultAmount(ex);
+
+  const submit = () => {
+    const r = amount ? Number(amount) : fallback ?? 0;
+    const w = showWeight ? Number(weight) || 0 : 0;
+    if (r <= 0) return;
+    onLog(w, r);
+    setAmount('');
+  };
+
+  const cell = 'h-11 rounded-lg text-center text-[16px] font-semibold tabular-nums';
+  const cols = showWeight ? 'grid-cols-[36px_1fr_1fr_1fr_44px]' : 'grid-cols-[36px_1fr_1fr_44px]';
+
+  return (
+    <div className="card mt-4 p-3">
+      <div className={`grid ${cols} gap-2 px-1 pb-2 text-[11px] font-semibold text-mute uppercase tracking-wide`}>
+        <div className="text-center">Set</div>
+        <div className="text-center">Last time</div>
+        {showWeight && <div className="text-center">lb</div>}
+        <div className="text-center">{amountLabel}</div>
+        <div />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        {Array.from({ length: rows }).map((_, i) => {
+          const s = logged.sets[i];
+          const p = prev[i];
+          const isNext = i === done;
+          const isLastDone = i === done - 1;
+          return (
+            <div
+              key={i}
+              className={`grid ${cols} gap-2 items-center px-1 py-1 rounded-xl ${s ? 'bg-good/10' : isNext ? 'bg-card2' : ''}`}
+            >
+              <div className={`text-center text-[14px] font-bold ${s ? 'text-good' : 'text-dim'}`}>{i + 1}</div>
+              <div className="text-center text-[13px] text-mute tabular-nums">{p ? formatSet(ex, p) : '—'}</div>
+              {showWeight &&
+                (s ? (
+                  <div className={`${cell} grid place-items-center`}>{s.weight}</div>
+                ) : isNext ? (
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    placeholder="0"
+                    aria-label={`Set ${i + 1} weight`}
+                    className={`${cell} bg-bg border border-line focus:border-accent w-full`}
+                  />
+                ) : (
+                  <div className={`${cell} grid place-items-center text-mute/50`}>–</div>
+                ))}
+              {s ? (
+                <div className={`${cell} grid place-items-center`}>{s.reps}</div>
+              ) : isNext ? (
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder={fallback ? String(fallback) : '0'}
+                  aria-label={`Set ${i + 1} ${amountLabel.toLowerCase()}`}
+                  className={`${cell} bg-bg border border-line focus:border-accent w-full placeholder:text-mute`}
+                />
+              ) : (
+                <div className={`${cell} grid place-items-center text-mute/50`}>–</div>
+              )}
+              <button
+                onClick={s ? onUndo : submit}
+                disabled={s ? !isLastDone : !isNext}
+                aria-label={s ? `Undo set ${i + 1}` : `Log set ${i + 1}`}
+                className={`h-11 w-11 rounded-lg grid place-items-center transition-colors ${
+                  s ? 'bg-good text-white' : isNext ? 'bg-accent text-white' : 'bg-card2 text-mute/40'
+                }`}
+              >
+                <CheckIcon size={20} />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center justify-between mt-3 px-1">
+        <button onClick={() => setExtra((n) => n + 1)} className="flex items-center gap-1 text-[14px] font-medium text-accent">
+          <PlusIcon size={16} /> Add set
+        </button>
+        <span className="text-[12px] text-mute">Tap ✓ to log · tap a green ✓ to undo</span>
+      </div>
+    </div>
+  );
 }

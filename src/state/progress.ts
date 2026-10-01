@@ -1,32 +1,5 @@
-import type { Session } from './store';
-import { WORKOUTS, DAY_ORDER, type DayKey, type Exercise, getExercise } from '../data/workouts';
-
-const XP_PER_RANK = 500;
-
-export type RankInfo = {
-  rank: number;
-  totalXp: number;
-  xpInRank: number;
-  xpToNext: number;
-  progress: number;
-};
-
-export function totalXp(sessions: Session[]): number {
-  return sessions.reduce((sum, s) => sum + (s.xp ?? 0), 0);
-}
-
-export function rankInfo(sessions: Session[]): RankInfo {
-  const total = totalXp(sessions);
-  const rank = Math.floor(total / XP_PER_RANK) + 1;
-  const xpInRank = total % XP_PER_RANK;
-  return {
-    rank,
-    totalXp: total,
-    xpInRank,
-    xpToNext: XP_PER_RANK,
-    progress: xpInRank / XP_PER_RANK,
-  };
-}
+import type { LoggedSet, Session } from './store';
+import { WORKOUTS, DAY_ORDER, type DayKey, getExercise } from '../data/workouts';
 
 export function sessionXp(session: Session): number {
   let xp = 0;
@@ -48,8 +21,6 @@ export function allowanceCount(sessions: Session[], now = new Date()): number {
   const windowStart = new Date(now.getTime() - 7 * 86400000);
   return sessions.filter((s) => {
     if (!s.finishedAt) return false;
-    const exCompleted = s.exercises.filter((e) => e.completed).length;
-    if (exCompleted < 3) return false;
     return new Date(s.finishedAt) >= windowStart;
   }).length;
 }
@@ -102,17 +73,14 @@ export function nextRecommendedDay(sessions: Session[]): DayKey {
   return DAY_ORDER[(DAY_ORDER.indexOf(last.day) + 1) % DAY_ORDER.length];
 }
 
-export function lastPerformance(sessions: Session[], exerciseId: string): { weight: number; reps: number; when: string } | null {
+export function lastSets(sessions: Session[], exerciseId: string): LoggedSet[] {
   for (let i = sessions.length - 1; i >= 0; i--) {
     const s = sessions[i];
     if (!s.finishedAt) continue;
     const le = s.exercises.find((e) => e.exerciseId === exerciseId);
-    if (le && le.sets.length > 0) {
-      const best = le.sets.reduce((a, b) => (a.weight * a.reps >= b.weight * b.reps ? a : b));
-      return { weight: best.weight, reps: best.reps, when: s.finishedAt };
-    }
+    if (le && le.sets.length > 0) return le.sets;
   }
-  return null;
+  return [];
 }
 
 export function isPR(sessions: Session[], exerciseId: string, weight: number, reps: number): boolean {
@@ -125,14 +93,4 @@ export function isPR(sessions: Session[], exerciseId: string, weight: number, re
     }
   }
   return score > 0;
-}
-
-export function exerciseXpLabel(ex: Exercise): string {
-  return `+${ex.xp}`;
-}
-
-export function suggestedNextWeight(sessions: Session[], exerciseId: string): number | null {
-  const last = lastPerformance(sessions, exerciseId);
-  if (!last) return null;
-  return last.weight;
 }

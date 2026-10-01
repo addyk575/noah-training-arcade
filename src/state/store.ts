@@ -23,7 +23,6 @@ export type Session = {
 export type Settings = {
   accent: AccentKey;
   density: 'comfortable' | 'compact';
-  coachContact: string;
 };
 
 export type WorkoutStore = {
@@ -39,7 +38,6 @@ const DEFAULT_STORE: WorkoutStore = {
   settings: {
     accent: 'lime',
     density: 'comfortable',
-    coachContact: '514-575-3929',
   },
 };
 

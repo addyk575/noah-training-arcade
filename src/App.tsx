@@ -1,86 +1,106 @@
 import { useState } from 'react';
 import { useStore } from './state/useStore';
-import { rankInfo, computeStreak, nextRecommendedDay } from './state/progress';
-import { Header } from './components/Header';
+import { nextRecommendedDay } from './state/progress';
 import { BottomNav, type Tab } from './components/BottomNav';
-import { Today } from './views/Today';
+import { Today, type FinishedSummary } from './views/Today';
 import { LiveSession } from './views/LiveSession';
 import { Plan } from './views/Plan';
 import { Stats } from './views/Stats';
 import { Log } from './views/Log';
-import type { DayKey } from './data/workouts';
+import { getExercise, WORKOUTS, type DayKey } from './data/workouts';
+import type { Session } from './state/store';
+
+function summarize(session: Session): FinishedSummary {
+  const day = WORKOUTS[session.day];
+  const lines = [`Day ${session.day} · ${day.name} done.`];
+  let sets = 0;
+  for (const le of session.exercises) {
+    if (le.sets.length === 0) continue;
+    const ex = getExercise(le.exerciseId);
+    if (!ex) continue;
+    sets += le.sets.length;
+    const str = le.sets
+      .map((s) => (ex.unit === 'lb' ? `${s.weight}×${s.reps}` : ex.unit === 'sec' ? `${s.reps}s` : `${s.reps}`))
+      .join(', ');
+    lines.push(`${ex.name}: ${str}`);
+  }
+  const minutes = Math.round((Date.now() - new Date(session.startedAt).getTime()) / 60000);
+  return { dayName: day.name, sets, minutes, text: lines.join('\n') };
+}
 
 export default function App() {
-  const api = useStore();
-  const { store, startSession, logSet, markExerciseComplete, undoLastSet, cancelSession, finishSession } = api;
+  const { store, startSession, logSet, markExerciseComplete, undoLastSet, cancelSession, finishSession } = useStore();
   const [tab, setTab] = useState<Tab>('today');
   const [viewingSession, setViewingSession] = useState(false);
-
-  const rank = rankInfo(store.sessions);
-  const streak = computeStreak(store.sessions);
+  const [finished, setFinished] = useState<FinishedSummary | null>(null);
 
   const handleStart = (day?: DayKey) => {
     const target = day ?? nextRecommendedDay(store.sessions);
     if (!store.currentSession) startSession(target);
+    setFinished(null);
     setViewingSession(true);
+    window.scrollTo(0, 0);
   };
 
   const handleFinish = () => {
+    const current = store.currentSession;
+    if (!current) return;
+    for (const le of current.exercises) {
+      if (le.sets.length > 0 && !le.completed) markExerciseComplete(le.exerciseId, true);
+    }
+    setFinished(summarize(current));
     finishSession();
     setViewingSession(false);
     setTab('today');
+    window.scrollTo(0, 0);
   };
 
-  const handleBack = () => setViewingSession(false);
-
   const handleCancel = () => {
-    if (confirm('Retreat from this battle? Logged sets will be discarded.')) {
+    if (confirm('Discard this workout? Logged sets will be deleted.')) {
       cancelSession();
       setViewingSession(false);
     }
   };
 
-  const showLiveSession = viewingSession && store.currentSession;
-
-  return (
-    <div className="max-w-[480px] mx-auto min-h-screen pb-[72px] relative">
-      {!showLiveSession && <Header rank={rank.rank} totalXp={rank.totalXp} streak={streak} />}
-
-      {showLiveSession ? (
+  if (viewingSession && store.currentSession) {
+    return (
+      <div className="max-w-[480px] mx-auto min-h-screen">
         <LiveSession
-          current={store.currentSession!}
+          current={store.currentSession}
           allSessions={store.sessions}
           onLogSet={logSet}
           onUndoSet={undoLastSet}
           onMarkComplete={markExerciseComplete}
           onFinish={handleFinish}
-          onBack={handleBack}
+          onBack={() => setViewingSession(false)}
           onCancel={handleCancel}
-          coachContact={store.settings.coachContact}
         />
-      ) : (
-        <>
-          {tab === 'today' && <Today sessions={store.sessions} onStart={handleStart} />}
-          {tab === 'plan' && <Plan />}
-          {tab === 'stats' && <Stats sessions={store.sessions} />}
-          {tab === 'log' && <Log sessions={store.sessions} />}
-        </>
-      )}
+      </div>
+    );
+  }
 
-      {!showLiveSession && <BottomNav active={tab} onChange={setTab} onStart={() => handleStart()} />}
-
-      {store.currentSession && !showLiveSession && (
-        <button
-          onClick={() => setViewingSession(true)}
-          className="fixed bottom-[72px] left-1/2 -translate-x-1/2 pixel text-[10px] tracking-[0.1em] text-black rounded-xs px-[18px] py-[10px] z-30 active:scale-[0.97] transition-transform"
-          style={{
-            background: 'linear-gradient(90deg, #FFD93D, #FF4785)',
-            boxShadow: '0 0 18px rgba(255,217,61,0.6)',
-          }}
-        >
-          ▶ RESUME WORKOUT
-        </button>
+  return (
+    <div className="max-w-[480px] mx-auto min-h-screen pb-[90px] relative">
+      {tab === 'today' && (
+        <Today
+          sessions={store.sessions}
+          inProgress={store.currentSession}
+          finished={finished}
+          onDismissFinished={() => setFinished(null)}
+          onStart={handleStart}
+        />
       )}
+      {tab === 'plan' && <Plan />}
+      {tab === 'stats' && <Stats sessions={store.sessions} />}
+      {tab === 'log' && <Log sessions={store.sessions} />}
+
+      <BottomNav
+        active={tab}
+        onChange={(t) => {
+          setTab(t);
+          window.scrollTo(0, 0);
+        }}
+      />
     </div>
   );
 }

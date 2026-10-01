@@ -1,212 +1,163 @@
 import { WORKOUTS, DAY_ORDER, type DayKey } from '../data/workouts';
 import type { Session } from '../state/store';
-import {
-  allowanceCount,
-  computeStreak,
-  nextRecommendedDay,
-  rankInfo,
-  sessionsThisWeek,
-  todayIndexInWeek,
-} from '../state/progress';
-import { PixelCard } from '../components/PixelCard';
-import { Card } from '../components/Card';
-import { XpBar } from '../components/XpBar';
+import { allowanceCount, computeStreak, nextRecommendedDay, sessionsThisWeek, todayIndexInWeek } from '../state/progress';
+import { Thumb } from '../components/ExerciseImage';
+import { CheckIcon, ChevronRight, FlameIcon, LinkIcon } from '../components/Icons';
+
+export type FinishedSummary = { dayName: string; sets: number; minutes: number; text: string };
 
 type Props = {
   sessions: Session[];
-  onStart: (day: DayKey) => void;
+  inProgress?: Session;
+  finished: FinishedSummary | null;
+  onDismissFinished: () => void;
+  onStart: (day?: DayKey) => void;
 };
 
-const DAY_COLOR: Record<DayKey, string> = {
-  A: '#4DD4FF',
-  B: '#10F8A0',
-  C: '#FF9A3C',
-};
+const GOAL = 3;
 
-export function Today({ sessions, onStart }: Props) {
+function greeting(now: Date): string {
+  const h = now.getHours();
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
+
+async function share(text: string) {
+  try {
+    if (navigator.share) {
+      await navigator.share({ text });
+      return;
+    }
+  } catch {
+    return;
+  }
+  window.location.href = `sms:?&body=${encodeURIComponent(text)}`;
+}
+
+export function Today({ sessions, inProgress, finished, onDismissFinished, onStart }: Props) {
   const now = new Date();
-  const rank = rankInfo(sessions);
-  const count = allowanceCount(sessions, now);
-  const goal = 3;
-  const unlocked = count >= goal;
-  const nextDay = nextRecommendedDay(sessions);
-  const day = WORKOUTS[nextDay];
+  const count = Math.min(allowanceCount(sessions, now), GOAL);
   const streak = computeStreak(sessions, now);
   const week = sessionsThisWeek(sessions, now);
   const todayIdx = todayIndexInWeek(now);
-  const weekLetters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const remaining = Math.max(0, goal - count);
+  const nextKey = inProgress?.day ?? nextRecommendedDay(sessions);
+  const next = WORKOUTS[nextKey];
 
   return (
-    <div className="pb-[80px]">
-      <div className="px-[16px] pt-[14px] pb-[6px]">
-        <XpBar
-          value={rank.xpInRank}
-          max={rank.xpToNext}
-          label={`LVL ${rank.rank.toString().padStart(2, '0')} → ${(rank.rank + 1).toString().padStart(2, '0')}`}
-          color="#FFD93D"
-        />
+    <div>
+      <div className="px-5 pt-8 flex items-start justify-between">
+        <div>
+          <div className="text-[13px] font-medium text-mute">
+            {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+          </div>
+          <h1 className="text-[28px] font-bold leading-tight mt-0.5">{greeting(now)}, Addy</h1>
+        </div>
+        <div className="flex items-center gap-1 rounded-full bg-card border border-line px-3 h-9 mt-1">
+          <FlameIcon size={16} className={streak > 0 ? 'text-warn' : 'text-mute'} />
+          <span className="text-[14px] font-semibold tabular-nums">{streak}</span>
+        </div>
       </div>
 
-      <div className="flex items-baseline justify-between px-[18px] mt-[20px] mb-[10px]">
-        <span className="eyebrow">ACTIVE QUEST</span>
-        <span className="meta">7-DAY WINDOW</span>
-      </div>
-
-      <div className="mx-[16px]">
-        <PixelCard accent={unlocked ? 'win' : 'xp'} glow>
-          <div
-            className="absolute top-0 right-0 text-black px-[10px] py-[5px]"
-            style={{
-              background: unlocked ? '#10F8A0' : '#FFD93D',
-              borderBottomLeftRadius: 10,
-              fontFamily: 'Press Start 2P, monospace',
-              fontSize: 9,
-              letterSpacing: '0.1em',
-            }}
-          >
-            +500 XP
+      {finished && (
+        <div className="mx-4 mt-5 rounded-2xl bg-good/10 border border-good/30 p-4">
+          <div className="flex items-center gap-2 text-good font-semibold text-[15px]">
+            <CheckIcon size={18} /> Workout saved
           </div>
-          <div className="meta text-[10px] tracking-[0.1em] uppercase">
-            QUEST · HIT THE WEEK
+          <div className="text-[14px] text-dim mt-1">
+            {finished.dayName} · {finished.sets} sets · {finished.minutes} min
           </div>
-          <div className="flex items-baseline mt-[2px]">
-            <span className="display text-[56px] leading-none text-ink">{count}</span>
-            <span className="display text-[28px] leading-none text-mute ml-[6px]">/ {goal}</span>
-          </div>
-          <div className="text-[13px] text-dim mt-[4px]">sessions in the last 7 days</div>
-
-          <div className="flex gap-[6px] mt-[14px]">
-            {Array.from({ length: goal }).map((_, i) => (
-              <div
-                key={i}
-                className="flex-1 h-[6px] rounded-[3px]"
-                style={{
-                  background: i < count ? (unlocked ? '#10F8A0' : '#FFD93D') : '#1E2545',
-                  boxShadow: i < count ? `0 0 6px ${unlocked ? '#10F8A0' : '#FFD93D'}` : 'none',
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="mt-[14px] text-[14px]">
-            {unlocked ? (
-              <span className="text-win font-bold">✅ Week complete</span>
-            ) : (
-              <>
-                <span className="text-dim">{remaining} more</span>{' '}
-                <span className="text-xp font-bold">→ week complete</span>
-              </>
-            )}
-          </div>
-        </PixelCard>
-      </div>
-
-      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
-        <span className="eyebrow">NEXT UP</span>
-        <span className="meta">RECOMMENDED</span>
-      </div>
-
-      <div className="mx-[16px]">
-        <Card accent={getAccent(nextDay)} leftStripe>
-          <div className="flex items-center gap-[14px] p-[16px] pl-[22px]">
-            <div className="flex-1 min-w-0">
-              <div className="mono text-[10px] text-mute tracking-[0.08em]">
-                DAY {nextDay} · +150 XP
-              </div>
-              <div className="display text-[22px] text-ink truncate mt-[2px]">{day.name}</div>
-              <div className="mono text-[10px] text-mute tracking-[0.08em] mt-[2px]">
-                {day.exercises.length} LIFTS · ~{day.duration} MIN
-              </div>
-            </div>
-            <button
-              onClick={() => onStart(nextDay)}
-              className="px-[16px] py-[11px] rounded-md text-black display text-[12px] tracking-[0.1em] active:scale-[0.97] transition-transform"
-              style={{
-                background: DAY_COLOR[nextDay],
-                boxShadow: `0 0 14px ${DAY_COLOR[nextDay]}80`,
-              }}
-            >
-              START ›
+          <div className="flex gap-2 mt-3">
+            <button onClick={() => share(finished.text)} className="btn-primary flex-1 h-10 text-[14px] flex items-center justify-center gap-1.5">
+              <LinkIcon size={16} /> Share with coach
+            </button>
+            <button onClick={onDismissFinished} className="btn-secondary px-4 h-10 text-[14px]">
+              Done
             </button>
           </div>
-        </Card>
-      </div>
+        </div>
+      )}
 
-      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
-        <span className="eyebrow">THIS WEEK</span>
-        <span className="flex items-center gap-[4px] text-[11px]">
-          <span className="animate-flame">🔥</span>
-          <span className="font-bold text-hp">
-            {streak > 0 ? `${streak} day${streak === 1 ? '' : 's'}` : '—'}
-          </span>
-        </span>
-      </div>
-
-      <div className="mx-[16px] flex gap-[6px]">
-        {week.map((done, i) => {
-          const isToday = i === todayIdx;
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-[4px]">
-              <span className="mono text-[9px] text-mute">{weekLetters[i]}</span>
+      <div className="card mx-4 mt-5 p-4">
+        <div className="flex items-baseline justify-between">
+          <div className="text-[15px] font-semibold">Weekly goal</div>
+          <div className="text-[13px] text-mute">last 7 days</div>
+        </div>
+        <div className="flex items-baseline gap-1 mt-2">
+          <span className="text-[34px] font-bold leading-none tabular-nums">{count}</span>
+          <span className="text-[18px] text-mute font-semibold">/ {GOAL} workouts</span>
+        </div>
+        <div className="flex gap-1.5 mt-3">
+          {Array.from({ length: GOAL }).map((_, i) => (
+            <div key={i} className={`flex-1 h-2 rounded-full ${i < count ? 'bg-good' : 'bg-card2'}`} />
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1.5 mt-4">
+          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((l, i) => (
+            <div key={i} className="flex flex-col items-center gap-1">
+              <span className={`text-[11px] font-medium ${i === todayIdx ? 'text-ink' : 'text-mute'}`}>{l}</span>
               <div
-                className="w-full aspect-square rounded-md grid place-items-center"
-                style={{
-                  background: done ? '#FF4785' : '#1E2545',
-                  border: `1.5px solid ${
-                    done ? '#FF4785' : isToday ? '#FFD93D' : 'transparent'
-                  }`,
-                  boxShadow: done ? '0 0 8px rgba(255,71,133,0.4)' : 'none',
-                  color: done ? '#fff' : isToday ? '#FFD93D' : '#6B6B95',
-                }}
+                className={`w-8 h-8 rounded-full grid place-items-center ${
+                  week[i] ? 'bg-good text-white' : i === todayIdx ? 'border-2 border-accent' : 'bg-card2'
+                }`}
               >
-                {done && <span className="display text-[13px] leading-none">✓</span>}
+                {week[i] && <CheckIcon size={14} />}
               </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
-      <div
-        className="mx-[16px] mt-[20px] rounded-lg px-[14px] py-[11px] flex items-center gap-[12px]"
-        style={{ background: '#151A2E', border: '1px solid #2D3560' }}
-      >
-        <span className="animate-flame text-[16px]">🔥</span>
-        <span className="flex-1 text-[12px] text-dim">
-          {streak > 0 ? 'Train tomorrow to keep the streak alive' : 'Finish a session to start a streak'}
-        </span>
-        <span className="display text-[11px] text-hp tracking-[0.1em]">{streak}D</span>
+      <div className="section-title">{inProgress ? 'In progress' : 'Up next'}</div>
+      <div className="card mx-4 overflow-hidden">
+        <div className="p-4">
+          <div className="text-[13px] font-semibold" style={{ color: next.color }}>
+            Day {next.key}
+          </div>
+          <div className="text-[22px] font-bold leading-tight">{next.name}</div>
+          <div className="text-[14px] text-dim mt-1">
+            {next.exercises.length} exercises · about {next.duration} min
+          </div>
+          <div className="flex gap-2 mt-4 overflow-x-auto -mx-4 px-4 no-scrollbar">
+            {next.exercises.map((ex) => (
+              <div key={ex.id} className="w-[76px] shrink-0">
+                <Thumb id={ex.id} size={76} />
+                <div className="text-[11px] text-dim leading-tight mt-1 line-clamp-2">{ex.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <button onClick={() => onStart(nextKey)} className="btn-primary w-full h-14 rounded-none text-[16px]">
+          {inProgress ? 'Resume workout' : 'Start workout'}
+        </button>
       </div>
 
-      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
-        <span className="eyebrow">PICK ANY DAY</span>
-        <span className="meta">OVERRIDE</span>
-      </div>
-
-      <div className="mx-[16px] grid grid-cols-3 gap-[8px]">
+      <div className="section-title">All workouts</div>
+      <div className="mx-4 flex flex-col gap-2">
         {DAY_ORDER.map((d) => {
-          const isNext = d === nextDay;
+          const w = WORKOUTS[d];
+          const disabled = !!inProgress && inProgress.day !== d;
           return (
             <button
               key={d}
               onClick={() => onStart(d)}
-              className="py-[14px] rounded-md display text-[14px] active:scale-[0.97] transition-transform"
-              style={{
-                background: '#151A2E',
-                border: `1.5px solid ${isNext ? DAY_COLOR[d] : '#2D3560'}`,
-                color: isNext ? DAY_COLOR[d] : '#6B6B95',
-                boxShadow: isNext ? `0 0 10px ${DAY_COLOR[d]}40` : 'none',
-              }}
+              disabled={disabled}
+              className="card w-full p-3 flex items-center gap-3 text-left active:bg-card2 transition-colors disabled:opacity-40"
             >
-              {d}
+              <Thumb id={w.exercises[1]?.id ?? w.exercises[0].id} size={52} />
+              <div className="flex-1 min-w-0">
+                <div className="text-[12px] font-semibold" style={{ color: w.color }}>
+                  Day {d}
+                </div>
+                <div className="text-[16px] font-semibold leading-tight">{w.name}</div>
+                <div className="text-[13px] text-mute mt-0.5">{w.exercises.length} exercises</div>
+              </div>
+              <ChevronRight size={18} className="text-mute" />
             </button>
           );
         })}
       </div>
+      {inProgress && (
+        <p className="text-[12px] text-mute text-center mt-3 px-6">Finish or discard the workout in progress to start a different day.</p>
+      )}
     </div>
   );
-}
-
-function getAccent(d: DayKey): 'mana' | 'win' | 'hp' {
-  return d === 'A' ? 'mana' : d === 'B' ? 'win' : 'hp';
 }

@@ -69,8 +69,4 @@ export const ACHIEVEMENTS: Achievement[] = [
     check: (s) => s.some((x) => x.exercises.some((e) => e.exerciseId === 'bench' && e.sets.some((st) => st.weight >= 135))) },
   { id: 'pullup_10',      name: '10 Strict Chins',  description: '10 unbroken underhand pull-ups',         icon: '🆙',
     check: (s) => s.some((x) => x.exercises.some((e) => e.exerciseId === 'pullup' && e.sets.some((st) => st.reps >= 10))) },
-  { id: 'xp_1000',        name: 'Rank 03',          description: 'Earn 1,000 total XP',          icon: '⭐',
-    check: (s) => s.reduce((n, x) => n + (x.xp ?? 0), 0) >= 1000 },
-  { id: 'xp_5000',        name: 'Rank 11',          description: 'Earn 5,000 total XP',          icon: '🌟',
-    check: (s) => s.reduce((n, x) => n + (x.xp ?? 0), 0) >= 5000 },
 ];

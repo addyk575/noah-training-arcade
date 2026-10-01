@@ -1,70 +1,30 @@
-export type Tab = 'today' | 'plan' | 'session' | 'stats' | 'log';
+import { ChartIcon, ClockIcon, HomeIcon, ListIcon } from './Icons';
 
-type Props = {
-  active: Tab;
-  onChange: (t: Tab) => void;
-  onStart: () => void;
-};
+export type Tab = 'today' | 'plan' | 'stats' | 'log';
 
-const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'today', label: 'TODAY', icon: '⌂' },
-  { key: 'plan', label: 'PLAN', icon: '▤' },
-  { key: 'session', label: 'START', icon: '⚔' },
-  { key: 'stats', label: 'STATS', icon: '◆' },
-  { key: 'log', label: 'LOG', icon: '▦' },
-];
+const TABS = [
+  { key: 'today', label: 'Today', Icon: HomeIcon },
+  { key: 'plan', label: 'Program', Icon: ListIcon },
+  { key: 'stats', label: 'Progress', Icon: ChartIcon },
+  { key: 'log', label: 'History', Icon: ClockIcon },
+] as const;
 
-export function BottomNav({ active, onChange, onStart }: Props) {
+export function BottomNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 mx-auto max-w-[480px] h-[60px] flex z-20"
-      style={{
-        background: '#0A0B1A',
-        borderTop: '1px solid #2D3560',
-      }}
+      className="fixed bottom-0 inset-x-0 mx-auto max-w-[480px] flex z-20 border-t border-line bg-bg/95 backdrop-blur"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {TABS.map(({ key, label, icon }) => {
-        const isCenter = key === 'session';
-        const isActive = active === key;
-        const color = isCenter ? '#FFD93D' : isActive ? '#FFD93D' : '#6B6B95';
-        const handle = () => (isCenter ? onStart() : onChange(key));
+      {TABS.map(({ key, label, Icon }) => {
+        const on = active === key;
         return (
           <button
             key={key}
-            onClick={handle}
-            className={`flex-1 flex flex-col items-center justify-center gap-[3px] ${
-              isCenter ? '-mt-[10px]' : ''
-            }`}
+            onClick={() => onChange(key)}
+            className={`flex-1 h-[60px] flex flex-col items-center justify-center gap-1 ${on ? 'text-accent' : 'text-mute'}`}
           >
-            <div
-              className="grid place-items-center"
-              style={
-                isCenter
-                  ? {
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      background: 'linear-gradient(135deg, #FFD93D, #FF4785)',
-                      color: '#000',
-                      fontSize: 20,
-                      boxShadow: '0 0 16px rgba(255,217,61,0.6)',
-                    }
-                  : {
-                      width: 26,
-                      height: 26,
-                      fontSize: 18,
-                      color,
-                    }
-              }
-            >
-              {icon}
-            </div>
-            <span
-              className="display text-[9px] tracking-[0.12em]"
-              style={{ color }}
-            >
-              {label}
-            </span>
+            <Icon size={22} />
+            <span className="text-[11px] font-medium">{label}</span>
           </button>
         );
       })}

@@ -1,136 +1,95 @@
+import { useState } from 'react';
 import { PLAN_COPY } from '../data/plan';
-import { PixelCard } from '../components/PixelCard';
-import { Card } from '../components/Card';
+import { DAY_ORDER, WORKOUTS, type DayKey } from '../data/workouts';
+import { Thumb } from '../components/ExerciseImage';
 
-const PHASE_COLORS = ['#4DD4FF', '#FF4785', '#A855F7', '#10F8A0'];
+const html = (s: string) => ({ __html: s });
 
 export function Plan() {
+  const [day, setDay] = useState<DayKey>('A');
+  const w = WORKOUTS[day];
+
   return (
-    <div className="pb-[80px]">
-      <div className="flex items-baseline justify-between px-[18px] mt-[20px] mb-[10px]">
-        <span className="eyebrow">THE MISSION</span>
-        <span className="meta">12-WEEK PROGRAM</span>
+    <div>
+      <div className="px-5 pt-8">
+        <h1 className="text-[28px] font-bold">Program</h1>
+        <p
+          className="text-[15px] text-dim leading-relaxed mt-2 [&>b]:text-ink [&>b]:font-semibold"
+          dangerouslySetInnerHTML={html(PLAN_COPY.mission.body)}
+        />
       </div>
 
-      <div className="mx-[16px]">
-        <PixelCard accent="xp" glow>
-          <div className="display text-[22px] text-ink">{PLAN_COPY.mission.title}</div>
-          <p
-            className="text-[13px] text-dim leading-[1.55] mt-[10px] [&>b]:text-ink [&>b]:font-bold"
-            dangerouslySetInnerHTML={{ __html: PLAN_COPY.mission.body }}
-          />
-        </PixelCard>
-      </div>
-
-      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
-        <span className="eyebrow">WHY IT WORKS</span>
-        <span className="meta">REASONING</span>
-      </div>
-
-      <div className="px-[16px] flex flex-col gap-[8px]">
-        {PLAN_COPY.why.map((w, i) => (
-          <div
-            key={i}
-            className="rounded-lg p-[14px]"
-            style={{ background: '#151A2E', border: '1px solid #2D3560' }}
+      <div className="mx-4 mt-6 grid grid-cols-3 gap-1 p-1 rounded-xl bg-card border border-line">
+        {DAY_ORDER.map((d) => (
+          <button
+            key={d}
+            onClick={() => setDay(d)}
+            className={`h-10 rounded-lg text-[14px] font-semibold transition-colors ${day === d ? 'bg-card2 text-ink' : 'text-mute'}`}
           >
-            <div className="display text-[14px] text-ink">{w.h}</div>
-            <p
-              className="text-[12px] text-dim leading-[1.55] mt-[4px] [&>b]:text-ink [&>b]:font-bold"
-              dangerouslySetInnerHTML={{ __html: w.p }}
-            />
-          </div>
+            Day {d}
+          </button>
         ))}
       </div>
 
-      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
-        <span className="eyebrow">PHASES</span>
-        <span className="meta">4 BLOCKS</span>
-      </div>
-
-      <div className="mx-[16px]">
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{ background: '#151A2E', border: '1px solid #2D3560' }}
-        >
-          {PLAN_COPY.phases.map((p, i) => (
-            <div
-              key={i}
-              className={`p-[14px] pl-[18px] relative ${i > 0 ? 'border-t border-line' : ''}`}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 4,
-                  background: PHASE_COLORS[i],
-                }}
-              />
-              <div className="flex items-baseline justify-between">
-                <div className="display text-[15px] text-ink">{p.name}</div>
-                <div
-                  className="mono text-[10px] tracking-[0.08em]"
-                  style={{ color: PHASE_COLORS[i] }}
-                >
-                  WK {p.wk}
+      <div className="card mx-4 mt-3 p-4">
+        <div className="text-[18px] font-bold">{w.name}</div>
+        <div className="text-[14px] text-dim mt-0.5">{w.focus}</div>
+        <div className="mt-3 flex flex-col divide-y divide-line">
+          {w.exercises.map((ex, i) => (
+            <div key={ex.id} className="flex items-center gap-3 py-2.5">
+              <Thumb id={ex.id} size={48} />
+              <div className="flex-1 min-w-0">
+                <div className="text-[15px] font-medium leading-snug">
+                  <span className="text-mute mr-1.5">{i + 1}</span>
+                  {ex.name}
                 </div>
+                <div className="text-[13px] text-mute">{ex.target}</div>
               </div>
-              <div className="mono text-[11px] text-mute mt-[2px]">
-                {p.reps} · {p.load}
-              </div>
-              <div className="text-[13px] text-dim leading-[1.5] mt-[6px]">{p.focus}</div>
-              <div className="text-[11px] text-mute italic mt-[4px]">{p.sets}</div>
+              {ex.superset && <span className="text-[11px] font-bold uppercase tracking-wide text-accent bg-accent/10 rounded-full px-2 py-1">Superset</span>}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
-        <span className="eyebrow">RULES</span>
-        <span className="meta">NON-NEGOTIABLE</span>
+      <div className="section-title">How it works</div>
+      <div className="mx-4 flex flex-col gap-2">
+        {PLAN_COPY.why.map((x) => (
+          <div key={x.h} className="card p-4">
+            <div className="text-[15px] font-semibold">{x.h}</div>
+            <p className="text-[14px] text-dim leading-relaxed mt-1 [&>b]:text-ink [&>b]:font-semibold" dangerouslySetInnerHTML={html(x.p)} />
+          </div>
+        ))}
+        <div className="card p-4">
+          <div className="text-[15px] font-semibold">Weekly goal</div>
+          <p className="text-[14px] text-dim leading-relaxed mt-1 [&>b]:text-ink [&>b]:font-semibold" dangerouslySetInnerHTML={html(PLAN_COPY.allowance.p)} />
+        </div>
       </div>
 
-      <div className="px-[16px] flex flex-col gap-[8px]">
-        {PLAN_COPY.rules.map((r, i) => (
-          <div
-            key={i}
-            className="rounded-lg p-[12px] flex gap-[12px]"
-            style={{ background: '#151A2E', border: '1px solid #2D3560' }}
-          >
-            <div
-              className="mono text-[12px] text-xp w-[24px] h-[24px] grid place-items-center rounded-xs self-start font-bold"
-              style={{ background: '#0A0B1A', border: '1px solid rgba(255,217,61,0.4)' }}
-            >
-              {(i + 1).toString().padStart(2, '0')}
+      <div className="section-title">12-week phases</div>
+      <div className="card mx-4 divide-y divide-line">
+        {PLAN_COPY.phases.map((p) => (
+          <div key={p.wk} className="p-4">
+            <div className="flex items-baseline justify-between">
+              <div className="text-[15px] font-semibold">{p.name}</div>
+              <div className="text-[12px] font-semibold text-mute">Weeks {p.wk}</div>
             </div>
-            <div className="flex-1">
-              <div className="text-[13px] font-bold text-ink">{r.h}</div>
-              <div className="text-[12px] text-dim leading-[1.5] mt-[2px]">{r.p}</div>
-            </div>
+            <div className="text-[13px] text-accent mt-0.5">{p.load}</div>
+            <div className="text-[14px] text-dim leading-relaxed mt-1">{p.focus}</div>
           </div>
         ))}
       </div>
 
-      <div className="flex items-baseline justify-between px-[18px] mt-[22px] mb-[10px]">
-        <span className="eyebrow">WEEKLY QUEST</span>
-        <span className="meta">THE DEAL</span>
-      </div>
-
-      <div className="mx-[16px]">
-        <Card accent="xp" leftStripe>
-          <div className="p-[16px] pl-[22px]">
-            <div className="flex items-center gap-[8px]">
-              <span className="text-[22px]">✅</span>
-              <div className="display text-[14px] text-xp">{PLAN_COPY.allowance.h}</div>
+      <div className="section-title">Rules</div>
+      <div className="card mx-4 divide-y divide-line">
+        {PLAN_COPY.rules.map((r, i) => (
+          <div key={r.h} className="p-4 flex gap-3">
+            <div className="w-6 h-6 rounded-full bg-card2 grid place-items-center text-[12px] font-bold text-dim shrink-0">{i + 1}</div>
+            <div>
+              <div className="text-[15px] font-semibold">{r.h}</div>
+              <div className="text-[14px] text-dim leading-relaxed mt-0.5">{r.p}</div>
             </div>
-            <p
-              className="text-[12px] text-dim leading-[1.55] mt-[8px] [&>b]:text-ink [&>b]:font-bold"
-              dangerouslySetInnerHTML={{ __html: PLAN_COPY.allowance.p }}
-            />
           </div>
-        </Card>
+        ))}
       </div>
     </div>
   );
